@@ -329,6 +329,7 @@ for i_filename = 1:length(study_config.filenames)
                 %% Data
                 data_eeg = nan(n_chans_eeg,length(times));
                 for ee = 1:length(EEG_stream_inds)
+                    
                     % (DE)COMMENT TO IGNORE THE EEG LOADING, time consuming
                     continue
 
