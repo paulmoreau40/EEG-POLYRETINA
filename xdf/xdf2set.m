@@ -329,7 +329,7 @@ for i_filename = 1:length(study_config.filenames)
                 %% Data
                 data_eeg = nan(n_chans_eeg,length(times));
                 for ee = 1:length(EEG_stream_inds)
-                    
+
                     % (DE)COMMENT TO IGNORE THE EEG LOADING, time consuming
                     continue
 
@@ -894,7 +894,7 @@ for i_filename = 1:length(study_config.filenames)
                 block_str = list{contains(list,'block')};
                 block_ind = str2num(block_str(end));
                 acq_ind = str2num(list{end});
-                all_events = export_events_EEGPOL(AllStreams, Event_stream_inds, times, block_ind, acq_ind);
+                all_events = export_events_EEGPOL(AllStreams, Event_stream_inds, times, block_ind, acq_ind, study_config);
                 
                 disp ('...done')
         end

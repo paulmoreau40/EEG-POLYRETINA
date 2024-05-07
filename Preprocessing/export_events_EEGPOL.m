@@ -1,4 +1,4 @@
-function events = export_events_EEGPOL(AllStreams, Event_streams, times, block_ind, acq_ind)
+function events = export_events_EEGPOL(AllStreams, Event_streams, times, block_ind, acq_ind, cfg)
 % Interpret event XDF streams for 4SC experiment to put them in the EEGLAB set
 % Inputs:
 %   - AllStreams :          streams loaded with load_xdf.
@@ -34,6 +34,17 @@ tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, even
 startTrialIndexing = 0;
 iBlock = 1;
 iTrial = 1;
+
+
+
+% handle subject P006 missing lot of events at beginning
+subject = cfg.subjects(cfg.current_subject).id;
+
+if strcmp(subject, 'P005')
+    trialType = {"Angle20"};
+end
+
+
 
 for i=1:events_count
     row = tbl(i,:);
