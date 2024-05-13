@@ -44,6 +44,11 @@ if strcmp(subject, 'P005')
     trialType = {"Angle20"};
 end
 
+% TEST TO ONLY KEEP ESSAI 1 of P009, bug après ?
+if strcmp(subject, 'P009')
+    events_count = 291;
+end
+
 
 
 for i=1:events_count

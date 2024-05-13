@@ -1,5 +1,5 @@
 %% ONLY CHANGE THESE PARTS!
-user = 'paul';
+user = 'paul_local';
 
 %% General foldernames and filenames
 [study_config.study_folder, study_config.raw_data_folder, study_config.electrodes_folder,...

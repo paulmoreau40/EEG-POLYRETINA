@@ -29,7 +29,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 5;
+    subject_ind = 6;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);
@@ -64,12 +64,13 @@ for subject_ind = subject_inds
         perc = 100*sum(NanInspection)/length(NanInspection);
         
         %EEG_merged = events_check(EEG_merged, study_config);
-        EEG_merged = events_check_EEGPOL(EEG_merged, study_config);
+        EEG_merged = events_check_EEGPOL(EEG_merged, study_config); % PAUL DECOMMENT
         
         % Read distance Answers (now included in the report function)
         %Answers = ReadAnswers_EEGAFF(study_config);
+        
         % Create Report for global stats
-        EEG_merged = Report_EEGAFF(EEG_merged, study_config);
+        EEG_merged = Report_EEGAFF(EEG_merged, study_config); % PAUL DECOMMENT
         
         %Merge the DataBases saving merged DataBase into .csv
         %MergedDataBase = [MergedDataBase,DataBase];        

@@ -22,18 +22,18 @@ Trial_urevent_seq = nan(n_Trials,5);
 Trial_perc = nan(n_Trials,1);
 MaxBufferPre = nan(n_Trials,1);
 MaxBufferPost = nan(n_Trials,1);
-WalkingBaseline_perc = nan(n_Trials,1);
-BlackBaseline_perc = nan(n_Trials,1);
-Observation_perc = nan(n_Trials,1);
-Question_perc = nan(n_Trials,1);
-Exploration_perc = nan(n_Trials,1);
+Baseline_perc = nan(n_Trials,1);
+% BlackBaseline_perc = nan(n_Trials,1);
+% Observation_perc = nan(n_Trials,1);
+% Question_perc = nan(n_Trials,1);
+% Exploration_perc = nan(n_Trials,1);
 
 %% Create useful variables
-startTrialEvents = contains({evts_noBounds.type},'BaseStart');
-obsStartEvents = strcmp({evts_noBounds.type},'ObsStart');
-questionStartEvents = strcmp({evts_noBounds.type},'QuestionStart');
-exploStartEvents = strcmp({evts_noBounds.type},'ExploStart');
-%endTrialEvents = strcmp({evts_noBounds.SoundName},'Close');
+startTrialEvents = contains({evts_noBounds.type},'BaselineCoarseStart');
+%obsStartEvents = strcmp({evts_noBounds.type},'ObsStart');
+%questionStartEvents = strcmp({evts_noBounds.type},'QuestionStart');
+%exploStartEvents = strcmp({evts_noBounds.type},'ExploStart');
+endTrialEvents = strcmp({evts_noBounds.SoundName},'Close');
 % walkInstructEvents = strcmp({evts_noBounds.SoundName},'Walk');
 
 %% Loop over trials
@@ -48,30 +48,30 @@ for tr = 1:n_Trials
     BlockInd(tr) = bl;
     
     % Check whether we are missing the trial
-    if ~any(trialEvents & startTrialEvents)
-        warning('Could not find trial start for Trial %d in Block %d.',tr_inBl, bl);
-        if any(trialEvents)
-            % Some events exist for this trial
-            disp('Choosing a replacement for the start event...');
-            if tr_inBl < 3 && any(trialEvents & walkInstructEvents)
-                disp('Using walking instruction');
-                trialStartEvent = trialEvents & walkInstructEvents;
-            else
-                % To do
-                disp('...');
-            end
-        else
-            disp('This trial was not recorded...');
-            if tr_inBl < 3
-                TrialType{tr} = 'Baseline';
-            else
-                error('Cannot infer trial type...')
-            end
-            continue
-        end
-    else
-        trialStartEvent = trialEvents & startTrialEvents;
-    end
+    % if ~any(trialEvents & startTrialEvents)
+    %     warning('Could not find trial start for Trial %d in Block %d.',tr_inBl, bl);
+    %     if any(trialEvents)
+    %         % Some events exist for this trial
+    %         disp('Choosing a replacement for the start event...');
+    %         if tr_inBl < 3 && any(trialEvents & walkInstructEvents)
+    %             disp('Using walking instruction');
+    %             trialStartEvent = trialEvents & walkInstructEvents;
+    %         else
+    %             % To do
+    %             disp('...');
+    %         end
+    %     else
+    %         disp('This trial was not recorded...');
+    %         if tr_inBl < 3
+    %             TrialType{tr} = 'Baseline';
+    %         else
+    %             error('Cannot infer trial type...')
+    %         end
+    %         continue
+    %     end
+    % else
+    %     trialStartEvent = trialEvents & startTrialEvents;
+    % end
     TrialType{tr} = evts_noBounds(trialStartEvent).TrialType;
     
     %% Fill urevent sequence
@@ -132,7 +132,7 @@ for tr = 1:n_Trials
         end
         
         if strcmp(TrialType{tr}, 'Baseline')
-            WalkingBaseline_perc(tr) = Trial_perc(tr);
+            Baseline_perc(tr) = Trial_perc(tr);
         else
             if Trial_perc(tr) == 100
                 BlackBaseline_perc(tr) = 100;
@@ -202,7 +202,7 @@ for tr = 1:n_Trials
 end
 
 EEGCompletenessSummary = table(BlockInd, TrialInd, TrialType, Trial_urevent_seq, Trial_perc, MaxBufferPre, MaxBufferPost,...
-    WalkingBaseline_perc, BlackBaseline_perc, Observation_perc, Question_perc, Exploration_perc);
+    Baseline_perc, BlackBaseline_perc, Observation_perc, Question_perc, Exploration_perc);
 
 %% Plot Summary info:
 figure
@@ -249,6 +249,8 @@ saveCurrentFig([cfg.figures_folder 'MissingData' filesep],...
     [subject, '_TrialsInspectionResults_Details'], {'png'}, [1400,700]);
 
 EEG.etc.TrialsInspection = EEGCompletenessSummary;
+
+
 
 %% Helper Functions ------------------------------------------
     function  perc = computeMissingEEGData(EEG,lat_start,lat_stop)
