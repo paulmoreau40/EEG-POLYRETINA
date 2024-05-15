@@ -356,88 +356,50 @@ for i_filename = 1:length(study_config.filenames)
                         local_times = EEG_stream.time_stamps(time_span);
                         
                         local2global = zeros(1,length(local_times));
-                        if strcmpi(user, 'ila')
-                            fprintf('Finding time samples for EEG%d;Seg%d\n', ee, seg)
-                            parfor t = 1:length(local_times)
-                                ind = find(times>=local_times(t),1);
-                                if isempty(ind)
-                                    if t == length(local_times) && local_times(t)<times(end)+interval/2
-                                        local2global(t) = length(times);
-                                    else
-                                        error('Seg %d: Sample %d could not be placed',seg,t);
-                                    end
-                                elseif ind==1
-                                    if t == 1 && local_times(t)>times(1)-interval/2
-                                        local2global(t) = 1;
-                                    else
-                                        error('Seg %d: Sample %d could not be placed',seg,t);
-                                    end
+                       
+                        % Parallel for loop
+                        ppm = ParforProgressbar(length(local_times), 'showWorkerProgress', true,...
+                            'title', sprintf('Finding time samples for EEG%d;Seg%d', ee, seg));
+                        parfor t = 1:length(local_times)
+                            ind = find(times>=local_times(t),1);
+                            if isempty(ind)
+                                if t == length(local_times) && local_times(t)<times(end)+interval/2
+                                    local2global(t) = length(times);
                                 else
-                                    if round(local_times(t)-times(ind-1),4)<=interval/2
-                                        local2global(t) = ind-1;
-                                    elseif round(times(ind)-local_times(t),4)<=interval/2
-                                        local2global(t) = ind;
-                                    else
-                                        error('Seg %d: Sample %d could not be placed',seg,t);
-                                    end
+                                    error('Seg %d: Sample %d could not be placed',seg,t);
                                 end
-                                
-                                %                             ind = find(round(local_times(t)-interval/2,4)<=times & times<round(local_times(t)+interval/2,4),1);
-                                %                             if isempty(ind)
-                                %                                 if t == length(local_times) && local_times(t)<times(end)+interval
-                                %                                     local2global(t) = length(times);
-                                %                                 elseif ~isempty(find(times == round(local_times(t)+interval/2,4),1))
-                                %                                     local2global(t) = find(times == round(local_times(t)+interval/2,4),1);
-                                %                                 else
-                                %                                     error('Seg %d: Sample %d could not be placed',seg,t);
-                                %                                 end
-                                %                             elseif length(ind)==1
-                                %                                 local2global(t) = ind;
-                                %                             end
-                            end
-                        else
-                            ppm = ParforProgressbar(length(local_times), 'showWorkerProgress', true,...
-                                'title', sprintf('Finding time samples for EEG%d;Seg%d', ee, seg));
-                            parfor t = 1:length(local_times)
-                                ind = find(times>=local_times(t),1);
-                                if isempty(ind)
-                                    if t == length(local_times) && local_times(t)<times(end)+interval/2
-                                        local2global(t) = length(times);
-                                    else
-                                        error('Seg %d: Sample %d could not be placed',seg,t);
-                                    end
-                                elseif ind==1
-                                    if t == 1 && local_times(t)>times(1)-interval/2
-                                        local2global(t) = 1;
-                                    else
-                                        error('Seg %d: Sample %d could not be placed',seg,t);
-                                    end
+                            elseif ind==1
+                                if t == 1 && local_times(t)>times(1)-interval/2
+                                    local2global(t) = 1;
                                 else
-                                    if round(local_times(t)-times(ind-1),4)<=interval/2
-                                        local2global(t) = ind-1;
-                                    elseif round(times(ind)-local_times(t),4)<=interval/2
-                                        local2global(t) = ind;
-                                    else
-                                        error('Seg %d: Sample %d could not be placed',seg,t);
-                                    end
+                                    error('Seg %d: Sample %d could not be placed',seg,t);
                                 end
-                                
-                                %                             ind = find(round(local_times(t)-interval/2,4)<=times & times<round(local_times(t)+interval/2,4),1);
-                                %                             if isempty(ind)
-                                %                                 if t == length(local_times) && local_times(t)<times(end)+interval
-                                %                                     local2global(t) = length(times);
-                                %                                 elseif ~isempty(find(times == round(local_times(t)+interval/2,4),1))
-                                %                                     local2global(t) = find(times == round(local_times(t)+interval/2,4),1);
-                                %                                 else
-                                %                                     error('Seg %d: Sample %d could not be placed',seg,t);
-                                %                                 end
-                                %                             elseif length(ind)==1
-                                %                                 local2global(t) = ind;
-                                %                             end
-                                ppm.increment();
+                            else
+                                if round(local_times(t)-times(ind-1),4)<=interval/2
+                                    local2global(t) = ind-1;
+                                elseif round(times(ind)-local_times(t),4)<=interval/2
+                                    local2global(t) = ind;
+                                else
+                                    error('Seg %d: Sample %d could not be placed',seg,t);
+                                end
                             end
-                            delete(ppm);
-                        end                        
+                            
+                            %                             ind = find(round(local_times(t)-interval/2,4)<=times & times<round(local_times(t)+interval/2,4),1);
+                            %                             if isempty(ind)
+                            %                                 if t == length(local_times) && local_times(t)<times(end)+interval
+                            %                                     local2global(t) = length(times);
+                            %                                 elseif ~isempty(find(times == round(local_times(t)+interval/2,4),1))
+                            %                                     local2global(t) = find(times == round(local_times(t)+interval/2,4),1);
+                            %                                 else
+                            %                                     error('Seg %d: Sample %d could not be placed',seg,t);
+                            %                                 end
+                            %                             elseif length(ind)==1
+                            %                                 local2global(t) = ind;
+                            %                             end
+                            ppm.increment();
+                        end
+                        delete(ppm);
+                                                
                         
                         if (length(local2global) ~= length(unique(local2global)))
                             % Only dealing with contiguous repetitions for now
@@ -550,84 +512,48 @@ for i_filename = 1:length(study_config.filenames)
                     end
                     
                     local2global = zeros(1,length(local_times));
-                    if strcmpi(user, 'ila')
-                        disp('Finding time samples for ET');
-                        parfor t = 1:length(local_times)
-                            ind = find(times>=local_times(t),1);
-                            if isempty(ind)
-                                if t == length(local_times) && local_times(t)<times(end)+interval/2
-                                    local2global(t) = length(times);
-                                else
-                                    error('Sample %d could not be placed',t);
-                                end
-                            elseif ind==1
-                                if t == 1 && local_times(t)>times(1)-interval/2
-                                    local2global(t) = 1;
-                                else
-                                    error('Sample %d could not be placed',t);
-                                end
+
+
+                    % Parallel for loop
+                    ppm = ParforProgressbar(length(local_times), 'showWorkerProgress', true,...
+                        'title', 'Finding time samples for ET');
+                    parfor t = 1:length(local_times)
+                        ind = find(times>=local_times(t),1);
+                        if isempty(ind)
+                            if t == length(local_times) && local_times(t)<times(end)+interval/2
+                                local2global(t) = length(times);
                             else
-                                if round(local_times(t)-times(ind-1),4)<=interval/2
-                                    local2global(t) = ind-1;
-                                elseif round(times(ind)-local_times(t),4)<=interval/2
-                                    local2global(t) = ind;
-                                else
-                                    error('Sample %d could not be placed',t);
-                                end
+                                error('Sample %d could not be placed',t);
                             end
-                            
-                            %                         ind = find(local_times(t)-interval/2<=times & times<local_times(t)+interval/2,1);
-                            %                         if isempty(ind)
-                            %                             if t == length(local_times) && local_times(t)<times(end)+interval
-                            %                                 local2global(t) = length(times);
-                            %                             else
-                            %                                 error('Sample %d could not be placed',t);
-                            %                             end
-                            %                         elseif length(ind)==1
-                            %                             local2global(t) = ind;
-                            %                         end
-                        end
-                    else
-                        ppm = ParforProgressbar(length(local_times), 'showWorkerProgress', true,...
-                            'title', 'Finding time samples for ET');
-                        parfor t = 1:length(local_times)
-                            ind = find(times>=local_times(t),1);
-                            if isempty(ind)
-                                if t == length(local_times) && local_times(t)<times(end)+interval/2
-                                    local2global(t) = length(times);
-                                else
-                                    error('Sample %d could not be placed',t);
-                                end
-                            elseif ind==1
-                                if t == 1 && local_times(t)>times(1)-interval/2
-                                    local2global(t) = 1;
-                                else
-                                    error('Sample %d could not be placed',t);
-                                end
+                        elseif ind==1
+                            if t == 1 && local_times(t)>times(1)-interval/2
+                                local2global(t) = 1;
                             else
-                                if round(local_times(t)-times(ind-1),4)<=interval/2
-                                    local2global(t) = ind-1;
-                                elseif round(times(ind)-local_times(t),4)<=interval/2
-                                    local2global(t) = ind;
-                                else
-                                    error('Sample %d could not be placed',t);
-                                end
+                                error('Sample %d could not be placed',t);
                             end
-                            
-                            %                         ind = find(local_times(t)-interval/2<=times & times<local_times(t)+interval/2,1);
-                            %                         if isempty(ind)
-                            %                             if t == length(local_times) && local_times(t)<times(end)+interval
-                            %                                 local2global(t) = length(times);
-                            %                             else
-                            %                                 error('Sample %d could not be placed',t);
-                            %                             end
-                            %                         elseif length(ind)==1
-                            %                             local2global(t) = ind;
-                            %                         end
-                            ppm.increment();
+                        else
+                            if round(local_times(t)-times(ind-1),4)<=interval/2
+                                local2global(t) = ind-1;
+                            elseif round(times(ind)-local_times(t),4)<=interval/2
+                                local2global(t) = ind;
+                            else
+                                error('Sample %d could not be placed',t);
+                            end
                         end
-                        delete(ppm);
+                        
+                        %                         ind = find(local_times(t)-interval/2<=times & times<local_times(t)+interval/2,1);
+                        %                         if isempty(ind)
+                        %                             if t == length(local_times) && local_times(t)<times(end)+interval
+                        %                                 local2global(t) = length(times);
+                        %                             else
+                        %                                 error('Sample %d could not be placed',t);
+                        %                             end
+                        %                         elseif length(ind)==1
+                        %                             local2global(t) = ind;
+                        %                         end
+                        ppm.increment();
                     end
+                    delete(ppm);
                     
                     
                     if (length(local2global) ~= length(unique(local2global)))
@@ -755,62 +681,37 @@ for i_filename = 1:length(study_config.filenames)
                         end
                         
                         local2global = zeros(1,length(local_times));
-                        if strcmpi(user, 'ila')
-                            disp('Finding time samples for MOCAP');
-                            parfor t = 1:length(local_times)
-                                ind = find(times>=local_times(t),1);
-                                if isempty(ind)
-                                    if t == length(local_times) && local_times(t)<times(end)+interval/2
-                                        local2global(t) = length(times);
-                                    else
-                                        error('Sample %d could not be placed',t);
-                                    end
-                                elseif ind==1
-                                    if t == 1 && local_times(t)>times(1)-interval/2
-                                        local2global(t) = 1;
-                                    else
-                                        error('Sample %d could not be placed',t);
-                                    end
+                        
+                        % Parallel for loop
+                        ppm = ParforProgressbar(length(local_times), 'showWorkerProgress', true,...
+                            'title', ['Finding time samples for MOCAP', num2str(moc)]);
+                        parfor t = 1:length(local_times)
+                            ind = find(times>=local_times(t),1);
+                            if isempty(ind)
+                                if t == length(local_times) && local_times(t)<times(end)+interval/2
+                                    local2global(t) = length(times);
                                 else
-                                    if round(local_times(t)-times(ind-1),4)<=interval/2
-                                        local2global(t) = ind-1;
-                                    elseif round(times(ind)-local_times(t),4)<=interval/2
-                                        local2global(t) = ind;
-                                    else
-                                        error('Sample %d could not be placed',t);
-                                    end
+                                    error('Sample %d could not be placed',t);
+                                end
+                            elseif ind==1
+                                if t == 1 && local_times(t)>times(1)-interval/2
+                                    local2global(t) = 1;
+                                else
+                                    error('Sample %d could not be placed',t);
+                                end
+                            else
+                                if round(local_times(t)-times(ind-1),4)<=interval/2
+                                    local2global(t) = ind-1;
+                                elseif round(times(ind)-local_times(t),4)<=interval/2
+                                    local2global(t) = ind;
+                                else
+                                    error('Sample %d could not be placed',t);
                                 end
                             end
-                        else
-                            ppm = ParforProgressbar(length(local_times), 'showWorkerProgress', true,...
-                                'title', ['Finding time samples for MOCAP', num2str(moc)]);
-                            parfor t = 1:length(local_times)
-                                ind = find(times>=local_times(t),1);
-                                if isempty(ind)
-                                    if t == length(local_times) && local_times(t)<times(end)+interval/2
-                                        local2global(t) = length(times);
-                                    else
-                                        error('Sample %d could not be placed',t);
-                                    end
-                                elseif ind==1
-                                    if t == 1 && local_times(t)>times(1)-interval/2
-                                        local2global(t) = 1;
-                                    else
-                                        error('Sample %d could not be placed',t);
-                                    end
-                                else
-                                    if round(local_times(t)-times(ind-1),4)<=interval/2
-                                        local2global(t) = ind-1;
-                                    elseif round(times(ind)-local_times(t),4)<=interval/2
-                                        local2global(t) = ind;
-                                    else
-                                        error('Sample %d could not be placed',t);
-                                    end
-                                end
-                                ppm.increment();
-                            end
-                            delete(ppm);
+                            ppm.increment();
                         end
+                        delete(ppm);
+                        
                         
                         if (length(local2global) ~= length(unique(local2global)))
                             % Only dealing with contiguous repetitions for now

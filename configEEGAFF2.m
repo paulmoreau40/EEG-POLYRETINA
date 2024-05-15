@@ -42,7 +42,7 @@ roi_reversed = [];
 %%% Subjects with mapping between ROI and dipoles ready:
 roi_mapped = intersect(roi_reversed,[]);
 
-%subject_inds = setdiff(included,[10,35]); % paul ? 
+%subject_inds = setdiff(included,[10,35]); % COMMENTED BY PAUL 
 subject_inds = included;
 %subject_inds = intersect(forward_complete,roi_reversed);
 subject_ind = subject_inds(1);
