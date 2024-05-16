@@ -191,48 +191,48 @@ end
 EEGCompletenessSummary = table(BlockInd, TrialInd, TrialType, Trial_urevent_seq, Trial_perc, MaxBufferPre, MaxBufferPost);
 
 %% Plot Summary info:
-figure
-for b = 1:n_Blocks
-    subplot(n_Blocks, 1, b)
-    hold on
-    walkingBase_bl = BlockInd == b & strcmp(TrialType,'Baseline');
-    trials_bl = BlockInd == b & ~strcmp(TrialType,'Baseline');
-    
-    bar(TrialInd(trials_bl), Trial_perc(trials_bl));
-    bar(TrialInd(walkingBase_bl), Trial_perc(walkingBase_bl));
-    title(sprintf('Block %d', b))
-    ylim([0,100])
-    xlabel('Trial')
-    ylabel('% Complete')
-    if b == 1
-        legend({'Trials', 'WalkingBaselines'}, 'Position', [0.825,0.925,0.1,0.05])
-    end
-end
-subject = cfg.subjects(cfg.current_subject).id;
-suptitle(subject);
-saveCurrentFig([cfg.figures_folder 'MissingData' filesep],...
-    [subject, '_TrialsInspectionResults'], {'png'}, [1400,700]);
-
-figure
-for b = 1:n_Blocks
-    subplot(n_Blocks, 1, b)
-    trials_bl = BlockInd == b & ~strcmp(TrialType,'Baseline');
-    
-    bar(TrialInd(trials_bl), table2array(EEGCompletenessSummary(trials_bl,9:12)))
-    xticks(TrialInd(trials_bl));
-    xticklabels(TrialType(trials_bl))
-    xtickangle(45)
-    title(sprintf('Block %d', b))
-    ylim([0,100])
-    ylabel('% Complete')
-    if b == 1
-        legend({'BlackBaselines', 'Observations', 'Questions', 'Explorations'}, 'Position', [0.825,0.93,0.1,0.05])
-    end
-end
-subject = cfg.subjects(cfg.current_subject).id;
-suptitle(subject);
-saveCurrentFig([cfg.figures_folder 'MissingData' filesep],...
-    [subject, '_TrialsInspectionResults_Details'], {'png'}, [1400,700]);
+% figure
+% for b = 1:n_Blocks
+%     subplot(n_Blocks, 1, b)
+%     hold on
+%     walkingBase_bl = BlockInd == b & strcmp(TrialType,'Baseline');
+%     trials_bl = BlockInd == b & ~strcmp(TrialType,'Baseline');
+% 
+%     bar(TrialInd(trials_bl), Trial_perc(trials_bl));
+%     bar(TrialInd(walkingBase_bl), Trial_perc(walkingBase_bl));
+%     title(sprintf('Block %d', b))
+%     ylim([0,100])
+%     xlabel('Trial')
+%     ylabel('% Complete')
+%     if b == 1
+%         legend({'Trials', 'WalkingBaselines'}, 'Position', [0.825,0.925,0.1,0.05])
+%     end
+% end
+% subject = cfg.subjects(cfg.current_subject).id;
+% suptitle(subject);
+% saveCurrentFig([cfg.figures_folder 'MissingData' filesep],...
+%     [subject, '_TrialsInspectionResults'], {'png'}, [1400,700]);
+% 
+% figure
+% for b = 1:n_Blocks
+%     subplot(n_Blocks, 1, b)
+%     trials_bl = BlockInd == b & ~strcmp(TrialType,'Baseline');
+% 
+%     bar(TrialInd(trials_bl), table2array(EEGCompletenessSummary(trials_bl,9:12)))
+%     xticks(TrialInd(trials_bl));
+%     xticklabels(TrialType(trials_bl))
+%     xtickangle(45)
+%     title(sprintf('Block %d', b))
+%     ylim([0,100])
+%     ylabel('% Complete')
+%     if b == 1
+%         legend({'BlackBaselines', 'Observations', 'Questions', 'Explorations'}, 'Position', [0.825,0.93,0.1,0.05])
+%     end
+% end
+% subject = cfg.subjects(cfg.current_subject).id;
+% suptitle(subject);
+% saveCurrentFig([cfg.figures_folder 'MissingData' filesep],...
+%     [subject, '_TrialsInspectionResults_Details'], {'png'}, [1400,700]);
 
 EEG.etc.TrialsInspection = EEGCompletenessSummary;
 

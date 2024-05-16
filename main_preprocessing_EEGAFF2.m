@@ -1,7 +1,7 @@
 %% processing loop
 addpath(genpath('C:\Users\Paul Moreau\Documents\EEG_project\EEG-POL')); %paul
-addpath(genpath('C:\Users\Paul Moreau\Documents\EEG_project\eeglab2021.0'));
-addpath(genpath('C:\Users\Paul Moreau\Documents\EEG_project\ParforProgMon-master'))
+addpath('C:\Users\Paul Moreau\Documents\EEG_project\eeglab2021.0');
+addpath('C:\Users\Paul Moreau\Documents\EEG_project\ParforProgMon-master')
 
 configEEGAFF2;
 
@@ -70,7 +70,7 @@ for subject_ind = subject_inds
         %Answers = ReadAnswers_EEGAFF(study_config);
         
         % Create Report for global stats
-        EEG_merged = Report_EEGAFF(EEG_merged, study_config); % PAUL DECOMMENT
+        %EEG_merged = Report_EEGAFF(EEG_merged, study_config); % PAUL DECOMMENT
         
         %Merge the DataBases saving merged DataBase into .csv
         %MergedDataBase = [MergedDataBase,DataBase];        
