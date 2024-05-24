@@ -22,9 +22,9 @@ Trial_urevent_seq = nan(n_Trials,2);
 
 % EEG Completeness
 Trial_perc = nan(n_Trials,1);
-Baseline_perc = nan(n_Blocks,1);
-Angle20_perc = nan(n_Blocks,1);
-Angle45_perc = nan(n_Blocks,1);
+Baseline_perc = nan(n_Trials,1);
+Angle20_perc = nan(n_Trials,1);
+Angle45_perc = nan(n_Trials,1);
 
 
 
@@ -118,6 +118,22 @@ for tr = 1:n_Trials
             % Otherwise this has already been set by a special case
         end
         
+        % Based on trial types, fills the angle / baseline perc
+        % Baseline perc useful for ICA eye removal in preprocess
+        % (select_data_of_interest) -> need to have Ntrials in Baseline,
+        % not just Nblocks
+        switch TrialType{tr}
+            case 'Baseline'
+                Baseline_perc(tr) = Trial_perc(tr);
+            case 'Angle20'
+                Angle20_perc(tr) = Trial_perc(tr);
+            case 'Angle45'
+                Angle45_perc(tr) = Trial_perc(tr);
+            otherwise
+                error('Trial type other than Baseline, Angle20 or Angle45')
+        end
+
+        
         % if strcmp(TrialType{tr}, 'Baseline')
         %     Baseline_perc(tr) = Trial_perc(tr);
         % else
@@ -188,7 +204,8 @@ for tr = 1:n_Trials
     end
 end
 
-EEGCompletenessSummary = table(BlockInd, TrialInd, TrialType, Trial_urevent_seq, Trial_perc, MaxBufferPre, MaxBufferPost);
+EEGCompletenessSummary = table(BlockInd, TrialInd, TrialType, Trial_urevent_seq, Trial_perc, Baseline_perc, Angle20_perc, ...
+    Angle45_perc, MaxBufferPre, MaxBufferPost);
 
 %% Plot Summary info:
 % figure

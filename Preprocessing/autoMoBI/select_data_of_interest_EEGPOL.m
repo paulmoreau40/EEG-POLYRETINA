@@ -1,4 +1,4 @@
-function out_of_interest_intervals = select_data_of_interest_EEGAFF2(EEG, DoI)
+function out_of_interest_intervals = select_data_of_interest_EEGPOL(EEG, DoI)
 events = EEG.event;
 TrialsInspection = EEG.etc.TrialsInspection;
 
@@ -39,10 +39,28 @@ for d = 1:numel(DoI)
                 intervals_of_interest(i,:) = [ceil(events(start_ev).latency), floor(events(stop_ev).latency)];
                 i = i+1;
             end
+
+        % POLYRETINA
+        case 'baselines'
+            Base_tr = find(TrialsInspection.Baseline_perc == 100);
+            for tr = 1:length(Base_tr)
+                start_ev = findInStructWithEmpties(events, 'urevent', TrialsInspection.Trial_urevent_seq(Base_tr(tr),1)); 
+                if isempty(start_ev)
+                    % It may happen that the trial has been rejected anyway
+                    continue
+                end
+                stop_ev = findInStructWithEmpties(events, 'urevent', TrialsInspection.Trial_urevent_seq(Base_tr(tr),2));
+                if isempty(stop_ev)
+                    % It may happen that the trial has been rejected anyway
+                    continue
+                end
+                intervals_of_interest(i,:) = [ceil(events(start_ev).latency), floor(events(stop_ev).latency)];
+                i = i+1;
+            end
     end
 end
 
-% Extract intervals between the intervals of interest
+% Extract "rejectable" intervals between the intervals of interest
 out_of_interest_intervals = zeros(i, 2);
 for j = 1:i
     if j == 1

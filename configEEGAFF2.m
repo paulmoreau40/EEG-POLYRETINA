@@ -1,5 +1,5 @@
 %% ONLY CHANGE THESE PARTS!
-user = 'paul_local';
+user = 'paul';
 
 %% General foldernames and filenames
 [study_config.study_folder, study_config.raw_data_folder, study_config.electrodes_folder,...
@@ -123,7 +123,7 @@ study_config.badSampsRejection = 'autoMoBI'; % 'manual', 'app', 'asr', 'autoMoBI
 
 %% Parameters for 'autoMoBI'
 % 'automatic' = method used in Berlin with automatic detection of bad segments, preceeded by a first ICA to remove eye movements
-study_config.autoMoBI.DoI4AMICAeye= {'walkingbaselines'};
+study_config.autoMoBI.DoI4AMICAeye= {'baselines'}; % POL: use every block baselines as baselines for Eye ICA
 
 study_config.autoMoBI.cleaned_data_type='sensor data'; % ICA not implemented yet; usually bad segments found on sensor level are also fine for IC later on
 

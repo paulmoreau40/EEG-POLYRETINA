@@ -31,7 +31,8 @@ EEG_HP_noLN.etc.lineNoiseRemoval = lineNoiseOut;
 % The EEG set is saved at different steps in the process
 %% Perform ICA on specific parts of the dataset to detect eye components
 dataOfInterest = cfg.autoMoBI.DoI4AMICAeye;
-OoI_segments_index = select_data_of_interest_EEGAFF2(EEG_HP_noLN, dataOfInterest);
+%OoI_segments_index = select_data_of_interest_EEGAFF2(EEG_HP_noLN, dataOfInterest);
+OoI_segments_index = select_data_of_interest_EEGPOL(EEG_HP_noLN, dataOfInterest);
 EEG_sel_for_ICAeye = eeg_eegrej(EEG_HP_noLN, OoI_segments_index);
 
 % save the dataset (to have the data locally, better for AMICA)

@@ -37,7 +37,8 @@ end
 
 bemobil_plot_patterns(EEG_ica_raw.icawinv, EEG_ica_raw.chanlocs, 'titles', titles,...
     'weights', class_results(:,3), 'minweight', cfg.ICdetect_thresholds(3));
-suptitle(sprintf('%s eye components selected by ICLabel (%s)', subject, upper(cfg.ICAmethod)));
+%suptitle(sprintf('%s eye components selected by ICLabel (%s)', subject, upper(cfg.ICAmethod)));
+sgtitle(sprintf('%s eye components selected by ICLabel (%s)', subject, upper(cfg.ICAmethod))); % PAUL POL
 saveCurrentFig(fullfile(cfg.figures_folder, 'AutoBadSampsCleaning', 'EyeDetection', filesep),...
     sprintf('%s_eye-comps',subject), {'fig'}, []);
 end

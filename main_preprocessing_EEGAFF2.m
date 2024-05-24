@@ -1,7 +1,11 @@
 %% processing loop
-addpath(genpath('C:\Users\Paul Moreau\Documents\EEG_project\EEG-POL')); %paul
-addpath('C:\Users\Paul Moreau\Documents\EEG_project\eeglab2021.0');
-addpath('C:\Users\Paul Moreau\Documents\EEG_project\ParforProgMon-master')
+% addpath(genpath('C:\Users\Paul Moreau\Documents\EEG_project\EEG-POL')); %paul
+% addpath('C:\Users\Paul Moreau\Documents\EEG_project\eeglab2021.0');
+% addpath('C:\Users\Paul Moreau\Documents\EEG_project\ParforProgMon-master')
+
+addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL')); %paul
+addpath('F:\PM_Polyretina\EEG_project\eeglab2021.0');
+addpath('F:\PM_Polyretina\EEG_project\ParforProgMon-master')
 
 configEEGAFF2;
 
