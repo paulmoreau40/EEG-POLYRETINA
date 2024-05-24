@@ -5,7 +5,6 @@
 
 addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL')); %paul
 addpath('F:\PM_Polyretina\EEG_project\eeglab2021.0');
-addpath('F:\PM_Polyretina\EEG_project\ParforProgMon-master')
 
 configEEGAFF2;
 

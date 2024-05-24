@@ -1,4 +1,7 @@
 function AllStreams = completeEEGfromEEGO_EEGAFF(AllStreams, EEG_stream_inds, block, subjects_info, input_filepath, figs_folder)
+
+warning('Warning: Function completeEEGfromEEGO_EEGAFF called')
+
 subj_name = input_filepath(end-3:end);
 sbj = strcmp({subjects_info(:).id}, subj_name);
 

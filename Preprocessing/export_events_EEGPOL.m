@@ -12,6 +12,11 @@ function events = export_events_EEGPOL(AllStreams, Event_streams, times, block_i
 
 % PAUL : only one stream for the Events, so NO LOOP -> CHANGE LATER IF
 % NEEDED
+
+if ~isinteger(Event_streams)
+    error('More than 1 event streams ?')
+end
+
 stream = AllStreams{Event_streams};
 %markers = SplitEventFields_EEGPOL(stream, times);
 
@@ -27,9 +32,15 @@ new_fields = {'FamEmptyStart', 'FamEmptyEnd', 'FamSymbolStart', 'FamSymbolEnd', 
     'BaselineCoarseStart', 'BaselineCoarseEnd', 'TrialStart', 'TrialEnd'}';
 dic = dictionary(required_fields, new_fields);
 
+% tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
+%     cellfun(@str2double, markers.events(:,2)), cellfun(@str2double, markers.events(:,3)), NaN(events_count,1), zeros(events_count,1), ...
+%     zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value', 'Duration','Latency','BlockIndex','TrialIndex'});
+
+% Try removing duration field
 tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
-    cellfun(@str2double, markers.events(:,2)), cellfun(@str2double, markers.events(:,3)), NaN(events_count,1), zeros(events_count,1), ...
+    cellfun(@str2double, markers.events(:,2)), NaN(events_count,1), zeros(events_count,1), ...
     zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value', 'Duration','Latency','BlockIndex','TrialIndex'});
+
 
 startTrialIndexing = 0;
 iBlock = 1;
@@ -106,7 +117,7 @@ for i=1:events_count
     tbl(i,:) = row;
 end
 
-tbl.DurationComputed = [diff(tbl.Time); 0];
+%tbl.DurationComputed = [diff(tbl.Time); 0];
 tbl.TimeZeroed = tbl.Time -  tbl.Time(1);
 
 
@@ -125,36 +136,62 @@ disp("There are " + Trial45Count + " trials of a 45-angle degree")
 
 % STORE IN THE RIGHT STRUCTURE AND WAY
 
-events = struct('type', {}, 'latency', {}, 'duration', {});
+% events = struct('type', {}, 'latency', {}, 'duration', {});
+events = struct('type', {}, 'latency', {});
 
 for t=1:events_count
     events(t).type = tbl.Name{t};
-    events(t).duration = tbl.DurationComputed(t);
+    %events(t).duration = tbl.DurationComputed(t);
     events(t).latency = tbl.Latency(t);
     events(t).TrialType = tbl.TrialType{t};
     events(t).BlockIndex = tbl.BlockIndex(t);
     events(t).TrialIndex = tbl.TrialIndex(t);
 end
 
+
+
+% Look for missing delimiters
+BlockStart = strcmp({events.type}, 'BlockStart'); % Very first start ?
+if ~any(BlockStart)
+    if acq == 1
+        startEvent = events(1);
+        startEvent.type = 'BlockStart';
+        startEvent.latency = events(1).latency - 1;
+        %startEvent.duration = NaN;
+        startEvent.TrialType = {NaN};
+        startEvent.BlockIndex = NaN;
+        startEvent.TrialIndex = NaN;
+        
+        events = [startEvent, events];
+    else
+        warning('Couldn''t find the start of the block in this file')
+    end
+end
+% 
+% BlockEnd = strcmp({events.type}, 'BlockEnd');
+% if ~any(BlockEnd)
+%     LastTrialEnd = strcmp({events.type}, 'TrialEnd') & [events.TrialIndex] == 26;
+%     if any(LastTrialEnd)
+%         events(end+1) = events(LastTrialEnd);
+%         events(end).type = 'BlockEnd';
+%         events(end).latency = events(end-1).latency + 1;
+%     else
+%         warning('Couldn''t find the end of the block in this file')
+%     end
+% end
+
+
+
+
+
+
+
+
+
+
 return
 
-  % 
-  % for t=start:stop
-  %       %if strcmp(stream.info.type,'Markers')
-  %       if strcmp(stream.info.type,'Tag') %PAUL
-  %           [~,s_events(t).latency] = min(abs(times - markers.time(t)));
-  %           s_events(t).type = markers.event{t};
-  %           s_events(t).duration = markers.duration(t);
-  %           s_events(t).BlockIndex = markers.block(t);
-  %           s_events(t).TrialIndex = markers.trial(t);
-  %           s_events(t).TrialType = markers.type{t};
-  %           s_events(t).Phase = markers.phase{t};
-  %           s_events(t).SoundName = markers.name{t};
-  %           s_events(t).Distance = markers.distance(t);
-  %           s_events(t).Location = markers.location{t};
-  %       end
-  %   end
-    
+
 
 
 
