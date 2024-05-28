@@ -13,7 +13,7 @@ function events = export_events_EEGPOL(AllStreams, Event_streams, times, block_i
 % PAUL : only one stream for the Events, so NO LOOP -> CHANGE LATER IF
 % NEEDED
 
-if ~isinteger(Event_streams)
+if ~isscalar(Event_streams)
     error('More than 1 event streams ?')
 end
 
@@ -39,7 +39,7 @@ dic = dictionary(required_fields, new_fields);
 % Try removing duration field
 tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
     cellfun(@str2double, markers.events(:,2)), NaN(events_count,1), zeros(events_count,1), ...
-    zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value', 'Duration','Latency','BlockIndex','TrialIndex'});
+    zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value','Latency','BlockIndex','TrialIndex'}); %'Duration'
 
 
 startTrialIndexing = 0;
@@ -153,12 +153,12 @@ end
 % Look for missing delimiters
 BlockStart = strcmp({events.type}, 'BlockStart'); % Very first start ?
 if ~any(BlockStart)
-    if acq == 1
+    if acq_ind == 1
         startEvent = events(1);
         startEvent.type = 'BlockStart';
         startEvent.latency = events(1).latency - 1;
         %startEvent.duration = NaN;
-        startEvent.TrialType = {NaN};
+        startEvent.TrialType = NaN;
         startEvent.BlockIndex = NaN;
         startEvent.TrialIndex = NaN;
         
@@ -179,14 +179,6 @@ end
 %         warning('Couldn''t find the end of the block in this file')
 %     end
 % end
-
-
-
-
-
-
-
-
 
 
 return

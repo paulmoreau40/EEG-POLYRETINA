@@ -343,7 +343,8 @@ else
     title({'Mahalanobian distance not applicable','(too few epochs or only 1 channel available)'});
 end
 
-suptitle([subject, ' Measures report for bad segment removal'])
+sgtitle([subject, ' Measures report for bad segment removal'])
+%suptitle([subject, ' Measures report for bad segment removal'])
 saveCurrentFig(fullfile(datapath_save_figures, filesep),...
     sprintf('%s_autocleaning_measures_report',subject), {'fig','png'},[1100 800])
 %savefig([datapath_save_figures filesep 'autocleaning_measures_report'])
@@ -394,7 +395,8 @@ if ~isempty(bad_epoch_3)
         'based on single channel epoch mean'})
 end
 
-suptitle([subject, ' Epochs distribution and selection depending on methods'])
+sgtitle([subject, ' Epochs distribution and selection depending on methods'])
+%suptitle([subject, ' Epochs distribution and selection depending on methods'])
 saveCurrentFig(fullfile(datapath_save_figures, filesep),...
     sprintf('%s_autocleaning_distributions_methods', subject), {'fig','png'},[1100 800])
 %savefig([datapath_save_figures filesep 'autocleaning_distributions_methods'])
@@ -633,7 +635,8 @@ if ~isempty(bad_epoch_3)
     ylabel('Mahal. distance across channels');
 end
 
-suptitle([subject, ' Effect of removal according to the used method'])
+sgtitle([subject, ' Effect of removal according to the used method'])
+%suptitle([subject, ' Effect of removal according to the used method'])
 saveCurrentFig(fullfile(datapath_save_figures, filesep),...
     sprintf('%s_autocleaning_removal_effect', subject), {'fig','png'},[1100 800])
 %savefig([datapath_save_figures filesep 'autocleaning_removal_effect'])

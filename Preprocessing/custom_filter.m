@@ -29,7 +29,8 @@ if ~isempty(lowcutoff)
     transition_bandwidth = 0.5; %in Hz, fixed by the filter order    
     passband_edge = lowcutoff + transition_bandwidth/2;
     
-    [EEG, ~, ~, ~] = pop_eegfiltnew(EEG, passband_edge, 0, filter_order, 0, [], 1);
+    %[EEG, ~, ~, ~] = pop_eegfiltnew(EEG, passband_edge, 0, filter_order, 0, [], 1);
+    [EEG, ~, ~] = pop_eegfiltnew(EEG, passband_edge, 0, filter_order, 0, [], 1);  % POL PAUL : new output in eeglab2024 (3 instead of 4)
     EEG = eeg_checkset(EEG);
     
     % Default code from pop_eegfiltnew
@@ -74,7 +75,8 @@ if ~isempty(highcutoff)
     %transition_bandwidth = 1; %in Hz, fixed by the filter order    
     %passband_edge = highcutoff - transition_bandwidth/2;
     
-    [EEG, ~, ~, filter_order] = pop_eegfiltnew(EEG, 0, highcutoff, [], 0, [], 1);
+    %[EEG, ~, ~, filter_order] = pop_eegfiltnew(EEG, 0, highcutoff, [], 0, [], 1);
+    [EEG, ~, filter_order] = pop_eegfiltnew(EEG, 0, highcutoff, [], 0, [], 1); % POL PAUL : new output in eeglab2024 (3 instead of 4)
     EEG = eeg_checkset(EEG);
     
     % Default code from pop_eegfiltnew

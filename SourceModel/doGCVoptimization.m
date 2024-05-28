@@ -94,7 +94,7 @@ end
 
     function [edges, opt_lambda]= plotLambdaGdistrib()
         figure;
-        suptitle(sprintf('%s',plotParams.subject));
+        sgtitle(sprintf('%s',plotParams.subject));
         subplot(1,2,1)
         hold on;
         edges = logspace(floor(min(log10([lambdas_optim(:);regparams(end)]))),...

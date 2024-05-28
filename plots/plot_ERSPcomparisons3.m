@@ -85,7 +85,7 @@ if exist('masks', 'var')
             c.Label.FontSize = 12;
         end
         
-        suptitle([num2str(params_plot.ROI),...
+        sgtitle([num2str(params_plot.ROI),...
             ' - Average Masked with ', masks.(fields{1}).(['nameMask', num2str(m)])])
         
         saveCurrentFig(params_plot.saveFigFolder, [params_plot.saveFigName_ave '-Mask', num2str(m)], {'fig'}, []);
@@ -124,7 +124,7 @@ else
         c.Label.FontSize = 12;
     end
     
-    suptitle([num2str(params_plot.ROI), ' - Average'])
+    sgtitle([num2str(params_plot.ROI), ' - Average'])
     
     saveCurrentFig(params_plot.saveFigFolder, [params_plot.saveFigName_ave, '-Unmasked'], {'fig'}, []);
 end
@@ -224,7 +224,7 @@ if exist('masks', 'var')
                 c.Label.FontSize = 12;
             end
             
-            suptitle([num2str(params_plot.ROI),...
+            sgtitle([num2str(params_plot.ROI),...
                 ' - Differences Masked with ', masks.BETWEEN.(['nameMask', num2str(m)])])
         end
         saveCurrentFig(params_plot.saveFigFolder,...

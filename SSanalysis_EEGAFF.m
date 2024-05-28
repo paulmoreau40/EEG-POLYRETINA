@@ -114,7 +114,7 @@ for subject_ind = subject_inds(1:end)
     plotERSProi(stc_freq_rois_b, 'RSCrh', operations, plot_options)
     subplot(2,3,6);
     plotERSProi(stc_freq_rois_b, 'OPArh', operations, plot_options)
-    suptitle(sprintf('%s - Mean baseline activity for each ROI - %d trials', subject, size(stc_freq_rois_b.trialinfo,1)));
+    sgtitle(sprintf('%s - Mean baseline activity for each ROI - %d trials', subject, size(stc_freq_rois_b.trialinfo,1)));
     % Custom color map
     c = colorbar;
     c.Position = [0.93 0.33, 0.015, 0.3];
@@ -153,7 +153,7 @@ for subject_ind = subject_inds(1:end)
     plotERSProi(stc_freq_rois, 'RSCrh', operations, plot_options)
     subplot(2,3,6);
     plotERSProi(stc_freq_rois, 'OPArh', operations, plot_options)
-    suptitle(sprintf('%s - Mean activity for each ROI - %d trials', subject, size(stc_freq_rois.trialinfo,1)));
+    sgtitle(sprintf('%s - Mean activity for each ROI - %d trials', subject, size(stc_freq_rois.trialinfo,1)));
     % Custom color map
     c = colorbar;
     c.Position = [0.93 0.33, 0.015, 0.3];

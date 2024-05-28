@@ -4,7 +4,7 @@
 % addpath('C:\Users\Paul Moreau\Documents\EEG_project\ParforProgMon-master')
 
 addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL')); %paul
-addpath('F:\PM_Polyretina\EEG_project\eeglab2021.0');
+addpath('F:\PM_Polyretina\EEG_project\eeglab2024.0\');
 
 configEEGAFF2;
 
@@ -32,7 +32,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 6;
+    subject_ind = 1;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);
@@ -67,7 +67,7 @@ for subject_ind = subject_inds
         perc = 100*sum(NanInspection)/length(NanInspection);
         
         %EEG_merged = events_check(EEG_merged, study_config);
-        EEG_merged = events_check_EEGPOL(EEG_merged, study_config); % PAUL DECOMMENT
+        EEG_merged = events_check_EEGPOL(EEG_merged, study_config);
         
         % Read distance Answers (now included in the report function)
         %Answers = ReadAnswers_EEGAFF(study_config);
@@ -112,7 +112,7 @@ for subject_ind = subject_inds
         EEG_prepared = pop_loadset('filename', N.preparedFile,'filepath', N.searchFolder_2);
         [ALLEEG, EEG_prepared, CURRENTSET] = eeg_store(ALLEEG, EEG_prepared, CURRENTSET);
     else % No need to load the data
-     end
+    end
     % Save RAM
     clear EEG_merged
     
