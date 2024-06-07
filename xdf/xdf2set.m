@@ -331,7 +331,7 @@ for i_filename = 1:length(study_config.filenames)
                 for ee = 1:length(EEG_stream_inds)
 
                     % (DE)COMMENT TO IGNORE THE EEG LOADING, time consuming
-                    %continue
+                    % continue
 
                     EEG_stream = AllStreams{EEG_stream_inds(ee)};
                     

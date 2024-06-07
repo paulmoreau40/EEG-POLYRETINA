@@ -11,7 +11,7 @@ configEEGAFF2;
 skipImport = false; % Boolean to avoid running Mobilab step
 overwriteImport = false; % Boolean to force Mobilab step to happen anyway
 skipPrep = false; % Boolean to avoid preparation
-overwritePrep = false | overwriteImport; % Boolean to force the preparation to happen anyway
+overwritePrep = true | overwriteImport; % Boolean to force the preparation to happen anyway
 skipPreproc = false; % Boolean to avoid preprocessing
 overwritePreproc = false | overwritePrep; % Boolean to force the preprocessing to happen anyway
 overwriteBadTempOnly = false | overwritePrep; % Boolean to force the bad epochs search to happen anyway
@@ -32,7 +32,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 1;
+    subject_ind = 6;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);
@@ -209,7 +209,7 @@ for subject_ind = subject_inds
     end
     
     clear EEG_forICA
-    continue
+    %continue
     
     if study_config.doDipoleFitting
         if ~skipDipoles && (~exist([N.searchFolder_2arch_rej N.dipfitFile],'file') || overwriteDipoles)
@@ -297,10 +297,12 @@ for subject_ind = subject_inds
         [ALLEEG, EEG_labelled, CURRENTSET] = eeg_store(ALLEEG, EEG_labelled, CURRENTSET);
     end
     
-    continue
+    %continue
     if (~exist([N.searchFolder_2arch_rej_ICcats N.postLabelingFile],'file') || overwriteManualLabeling)
         %% Manual ICs selection
-        keptComponents_repaired % calls the script edited manually
+        %keptComponents_repaired % calls the script edited manually
+        keptComponents1
+
         switch study_config.badSampsRejection
             case 'app'
                 compsInspect = app_KC;
@@ -326,10 +328,10 @@ for subject_ind = subject_inds
             end
            
             %comp2review = union(union(compsInspect(i).Brain,compsInspect(i).BrainWithNoise),compsInspect(i).Doubts);
-            comp2review = union(setdiff(compsInspect(i).NoiseWithBrain,compsInspect(i).Doubts),...
-                setdiff(compsInspect(i).Doubts_Ainhoa,union(union(union(compsInspect(i).Brain,...
-                compsInspect(i).BrainWithNoise),compsInspect(i).Checkerboard),compsInspect(i).Doubts)));
-            %comp2review = compsInspect(i).Doubts;
+            % comp2review = union(setdiff(compsInspect(i).NoiseWithBrain,compsInspect(i).Doubts),...
+            %     setdiff(compsInspect(i).Doubts_Ainhoa,union(union(union(compsInspect(i).Brain,...
+            %     compsInspect(i).BrainWithNoise),compsInspect(i).Checkerboard),compsInspect(i).Doubts)));
+            comp2review = compsInspect(i).Doubts;
             %comp2review = union(compsInspect(i).Brain,compsInspect(i).BrainWithNoise);
             userDecision1 = input(sprintf('Review subject %s? ',subject));
             if userDecision1
@@ -367,76 +369,76 @@ for subject_ind = subject_inds
         [ALLEEG, EEG_compRej, CURRENTSET] = eeg_store(ALLEEG, EEG_compRej, CURRENTSET);
     end
     
-    if study_config.do_second_tempRej && (~exist([N.searchFolder_2arch_rej_ICcats N.finalFile],'file') || overwriteSecondTempRej)
-        EEG_copy = EEG_compRej;
-        
-        % Add a channel corresponding to already flagged bad samples
-        EEG_copy.nbchan = EEG_compRej.nbchan + 1;
-        switch study_config.badSampsRejection
-            case 'app'
-                EEG_copy.data = cat(1, EEG_compRej.data, EEG_compRej.etc.APP.rejectedSamples);
-            case 'asr'
-                EEG_copy.data = cat(1, EEG_compRej.data, EEG_compRej.etc.ASR.rejectedSamples);
-        end
-        EEG_copy.chanlocs(EEG_copy.nbchan) = struct('labels', 'rejSamps', 'type', 'MASK', 'ref', '', 'urchan', [],...
-            'X', [], 'Y', [], 'Z', [], 'sph_theta', [], 'sph_phi', [], 'sph_radius', [], 'theta', [], 'radius', []);
-        
-        % Select data in Conditions only
-        CondNames = unique({EEG_compRej.event.Condition},'stable');
-        CondNames = CondNames(2:end);
-        CondLats = zeros(length(CondNames),2);
-        c1 = 1;
-        c2 = 1;
-        while c2 <= length(CondNames)
-            ev = find(strcmp({EEG_compRej.event.Condition},CondNames{c2}),1);
-            CondLats(c1,1) = floor(EEG_compRej.event(ev).latency)-EEG_compRej.srate;
-            if c1>1 && (CondLats(c1,1) <= CondLats(c1-1,2))
-                if c1 == length(CondNames)
-                    CondLats(c1,1) = 0; 
-                end
-                c1 = c1-1;                
-            end
-            
-            ev = find(strcmp({EEG_compRej.event.Condition},CondNames{c2}) &...
-                contains({EEG_compRej.event.Phase},'Phase'),1,'last');
-            CondLats(c1,2) = ceil(EEG_compRej.event(ev).latency)+EEG_compRej.srate;
-            
-            c1 = c1+1;
-            c2 = c2+1;
-        end
-        CondLats(CondLats==0) = [];
-        EEG_selected = pop_select(EEG_copy, 'point', CondLats);
-        clear EEG_copy EEG_compRej
-        
-        % copy bad samples information and remove the corresponding channel
-        switch study_config.badSampsRejection
-            case 'app'
-                EEG_selected.etc.APP.rejectedSamples = logical(EEG_selected.data(end,:));
-            case 'asr'
-                EEG_selected.etc.ASR.rejectedSamples = logical(EEG_selected.data(end,:));
-        end
-        EEG_selected.nbchan = EEG_selected.nbchan - 1;
-        EEG_selected.data = EEG_selected.data(1:end-1,:);
-        EEG_selected.chanlocs = EEG_selected.chanlocs(1:end-1);
-        EEG_selected.icaact = [];
-        EEG_selected = eeg_checkset(EEG_selected);
-        
-        EEG_tempRej = preprocess_4SC(EEG_selected, study_config, false);
-        
-        %pop_viewprops(EEG_tempRej, 0, 1:size(EEG_tempRej.icaact,1),...
-        %    {'freqrange',[1 60]}, {}, 1); % for component properties
-        
-        EEG_final = EEG_selected;
-        switch study_config.badSampsRejection
-            case 'app'
-                EEG_final.etc.APP2 = EEG_tempRej.etc.APP;
-            case 'asr'
-                EEG_final.etc.ASR2 = EEG_tempRej.etc.ASR;
-        end       
-        clear EEG_tempRej
-        
-        pop_saveset(EEG_final, 'filename', N.finalFile,'filepath', N.searchFolder_2arch_rej_ICcats);
-    end
+    % if study_config.do_second_tempRej && (~exist([N.searchFolder_2arch_rej_ICcats N.finalFile],'file') || overwriteSecondTempRej)
+    %     EEG_copy = EEG_compRej;
+    % 
+    %     % Add a channel corresponding to already flagged bad samples
+    %     EEG_copy.nbchan = EEG_compRej.nbchan + 1;
+    %     switch study_config.badSampsRejection
+    %         case 'app'
+    %             EEG_copy.data = cat(1, EEG_compRej.data, EEG_compRej.etc.APP.rejectedSamples);
+    %         case 'asr'
+    %             EEG_copy.data = cat(1, EEG_compRej.data, EEG_compRej.etc.ASR.rejectedSamples);
+    %     end
+    %     EEG_copy.chanlocs(EEG_copy.nbchan) = struct('labels', 'rejSamps', 'type', 'MASK', 'ref', '', 'urchan', [],...
+    %         'X', [], 'Y', [], 'Z', [], 'sph_theta', [], 'sph_phi', [], 'sph_radius', [], 'theta', [], 'radius', []);
+    % 
+    %     % Select data in Conditions only
+    %     CondNames = unique({EEG_compRej.event.Condition},'stable');
+    %     CondNames = CondNames(2:end);
+    %     CondLats = zeros(length(CondNames),2);
+    %     c1 = 1;
+    %     c2 = 1;
+    %     while c2 <= length(CondNames)
+    %         ev = find(strcmp({EEG_compRej.event.Condition},CondNames{c2}),1);
+    %         CondLats(c1,1) = floor(EEG_compRej.event(ev).latency)-EEG_compRej.srate;
+    %         if c1>1 && (CondLats(c1,1) <= CondLats(c1-1,2))
+    %             if c1 == length(CondNames)
+    %                 CondLats(c1,1) = 0; 
+    %             end
+    %             c1 = c1-1;                
+    %         end
+    % 
+    %         ev = find(strcmp({EEG_compRej.event.Condition},CondNames{c2}) &...
+    %             contains({EEG_compRej.event.Phase},'Phase'),1,'last');
+    %         CondLats(c1,2) = ceil(EEG_compRej.event(ev).latency)+EEG_compRej.srate;
+    % 
+    %         c1 = c1+1;
+    %         c2 = c2+1;
+    %     end
+    %     CondLats(CondLats==0) = [];
+    %     EEG_selected = pop_select(EEG_copy, 'point', CondLats);
+    %     clear EEG_copy EEG_compRej
+    % 
+    %     % copy bad samples information and remove the corresponding channel
+    %     switch study_config.badSampsRejection
+    %         case 'app'
+    %             EEG_selected.etc.APP.rejectedSamples = logical(EEG_selected.data(end,:));
+    %         case 'asr'
+    %             EEG_selected.etc.ASR.rejectedSamples = logical(EEG_selected.data(end,:));
+    %     end
+    %     EEG_selected.nbchan = EEG_selected.nbchan - 1;
+    %     EEG_selected.data = EEG_selected.data(1:end-1,:);
+    %     EEG_selected.chanlocs = EEG_selected.chanlocs(1:end-1);
+    %     EEG_selected.icaact = [];
+    %     EEG_selected = eeg_checkset(EEG_selected);
+    % 
+    %     EEG_tempRej = preprocess_4SC(EEG_selected, study_config, false);
+    % 
+    %     %pop_viewprops(EEG_tempRej, 0, 1:size(EEG_tempRej.icaact,1),...
+    %     %    {'freqrange',[1 60]}, {}, 1); % for component properties
+    % 
+    %     EEG_final = EEG_selected;
+    %     switch study_config.badSampsRejection
+    %         case 'app'
+    %             EEG_final.etc.APP2 = EEG_tempRej.etc.APP;
+    %         case 'asr'
+    %             EEG_final.etc.ASR2 = EEG_tempRej.etc.ASR;
+    %     end       
+    %     clear EEG_tempRej
+    % 
+    %     pop_saveset(EEG_final, 'filename', N.finalFile,'filepath', N.searchFolder_2arch_rej_ICcats);
+    % end
     
     if ~isempty(ALLEEG)
         ALLEEG = pop_delset(ALLEEG, 1:CURRENTSET);

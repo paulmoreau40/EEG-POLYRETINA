@@ -36,10 +36,15 @@ dic = dictionary(required_fields, new_fields);
 %     cellfun(@str2double, markers.events(:,2)), cellfun(@str2double, markers.events(:,3)), NaN(events_count,1), zeros(events_count,1), ...
 %     zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value', 'Duration','Latency','BlockIndex','TrialIndex'});
 
-% Try removing duration field
-tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
-    cellfun(@str2double, markers.events(:,2)), NaN(events_count,1), zeros(events_count,1), ...
-    zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value','Latency','BlockIndex','TrialIndex'}); %'Duration'
+% % Try removing duration field
+% tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
+%     cellfun(@str2double, markers.events(:,2)), NaN(events_count,1), zeros(events_count,1), ...
+%     zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value','Latency','BlockIndex','TrialIndex'}); %'Duration'
+
+% Try removing Index
+tbl = table(markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
+    cellfun(@str2double, markers.events(:,2)), cellfun(@str2double, markers.events(:,3)), NaN(events_count,1), zeros(events_count,1), ...
+    zeros(events_count,1), 'VariableNames', {'Time', 'RawName', 'Name', 'TrialType', 'Value', 'Duration','Latency','BlockIndex','TrialIndex'});
 
 
 startTrialIndexing = 0;
@@ -117,29 +122,170 @@ for i=1:events_count
     tbl(i,:) = row;
 end
 
-%tbl.DurationComputed = [diff(tbl.Time); 0];
-tbl.TimeZeroed = tbl.Time -  tbl.Time(1);
+
+
+% ADDING A BaselineEnd EVENT AFTER EACH BASELINE
+
+baseline_start_indices = find(strcmp(tbl.Name, 'BaselineStart'));
+new_rows = table(); % Initialize an empty table to hold new rows
+for i = 1:length(baseline_start_indices)
+    current_index = baseline_start_indices(i);
+    if current_index < height(tbl)
+        next_index = current_index + 1;
+        
+        % Create the new row
+        new_row = tbl(current_index, :);
+        new_row.Name = {'BaselineEnd'};
+        new_row.RawName = {'End baseline'};
+        new_row.Latency = tbl.Latency(next_index) - 1;
+        new_row.Time = tbl.Time(next_index) - 0.01;
+        %new_row.BlockIndex = tbl.BlockIndex(current_index);
+        %new_row.TrialIndex = tbl.TrialIndex(current_index);
+        
+        new_rows = [new_rows; new_row];
+    end
+end
+
+for i = 1:height(new_rows)
+    insert_index = baseline_start_indices(i) + i - 1; % Adjust the index to account for inserted rows
+    tbl = [tbl(1:insert_index, :); new_rows(i, :); tbl(insert_index + 1:end, :)];
+end
+
+
+tbl.DurationComputed = [diff(tbl.Time); 0];
+% tbl.TimeZeroed = tbl.Time -  tbl.Time(1);
 
 
 
-% COUNT OCCURENCE OF TRIALS WITH 20° AND 45° ANGLE AND BASELINE
-TrialBaselineCount = sum(tbl(tbl.BlockIndex ~= 0, :).Value == -1);
+
+% LOOP TO CHECK FOR ABNORMAL EVENTS' DURATIONS
+sample_rate = 500; % HARDCODING !! careful if changes in the future
+for i=1:height(tbl)
+    row = tbl(i,:);
+    if ismember(row.Name,'BaselineStart') && row.DurationComputed > 6
+        next_row = tbl(i + 1,:);
+        next_row.Time = row.Time + 5; % 5 seconds
+        next_row.Latency = row.Latency + 5*sample_rate;
+        tbl(i + 1,:) = next_row;
+    end
+
+    if ismember(row.Name,'TrialStart') && row.DurationComputed > 16
+        next_row = tbl(i + 1,:);
+        next_row.Time = row.Time + 16; % 5 seconds
+        next_row.Latency = row.Latency + 16*sample_rate;
+        tbl(i + 1,:) = next_row;
+    end 
+end
+tbl.NewDurationComputed = [diff(tbl.Time); 0]; % just to visually verify
+
+
+
+
+
+% BIG CHECK UP TO VERIFY
+% - 1 baseline per block
+% - 2 trials of the same type per block (Angle45 or Angle20)
+% - Time and Latencies are perfectly sorted, no mis-swapped rows
+
+block_error = false;
+baseline_error = false;
+trial_error = false;
+latency_sorted_error = false;
+time_sorted_error = false;
+count_error = false;
+
+block_indices = unique(tbl.BlockIndex);
+block_indices(block_indices == 0) = []; % to ignore familiarisation, training ...
+
+for i = 1:length(block_indices)
+    block_index = block_indices(i);
+    block_rows = tbl(tbl.BlockIndex == block_index, :);
+    
+    % Check for one baseline (BaselineStart followed by BaselineEnd)
+    baseline_start_indices = find(strcmp(block_rows.Name, 'BaselineStart'));
+    baseline_end_indices = find(strcmp(block_rows.Name, 'BaselineEnd'));
+    
+    if length(baseline_start_indices) ~= 1 || length(baseline_end_indices) ~= 1 || ...
+       baseline_start_indices + 1 ~= baseline_end_indices
+        block_error = true;
+        fprintf('Error: Block %d does not have exactly one baseline with a start and end in correct order.\n', block_index);
+    end
+    
+    % Check for two trials of the same TrialType
+    trial_start_indices = find(strcmp(block_rows.Name, 'TrialStart'));
+    trial_end_indices = find(strcmp(block_rows.Name, 'TrialEnd'));
+    
+    if length(trial_start_indices) ~= 2 || length(trial_end_indices) ~= 2 || ...
+       any(trial_start_indices + 1 ~= trial_end_indices)
+        block_error = true;
+        fprintf('Error: Block %d does not have exactly two trials with starts and ends in correct order.\n', block_index);
+    end
+    
+    % Check that the two trials have the same TrialType
+    trial_types = block_rows.TrialType(trial_start_indices);
+    
+    if (length(trial_types) ~= 2) && (trial_types{1} ~= trial_types{2})
+        block_error = true;
+        fprintf('Error: Block %d has trials of different types.\n', block_index);
+    end
+end
+
+% 'BaselineStart' / 'TrialStart' followed by 'BaselineEnd' / 'TrialEnd'
+for i = 1:height(tbl) - 1
+    if strcmp(tbl.Name{i}, 'BaselineStart') && ~strcmp(tbl.Name{i+1}, 'BaselineEnd')
+        baseline_error = true;
+        fprintf('Error: BaselineStart at row %d is not followed by BaselineEnd.\n', i);
+    end
+    
+    if strcmp(tbl.Name{i}, 'TrialStart') && ~strcmp(tbl.Name{i+1}, 'TrialEnd')
+        trial_error = true;
+        fprintf('Error: TrialStart at row %d is not followed by TrialEnd.\n', i);
+    end
+end
+
+% Check that latencies are sorted in ascending order
+if any(diff(tbl.Latency) <= 0)
+    latency_sorted_error = true;
+    fprintf('Error: Latencies are not sorted in ascending order.\n');
+end
+
+% Check that time values are sorted in ascending order
+if any(diff(tbl.Time) <= 0)
+    time_sorted_error = true;
+    fprintf('Error: Time values are not sorted in ascending order.\n');
+end
+
+% COUNT OCCURRENCES OF TRIALS WITH 20° AND 45° ANGLE AND BASELINE
+TrialBaselineCount = sum(tbl(tbl.BlockIndex ~= 0, :).Value == -1) / 2;
 Trial20Count = sum(tbl(tbl.BlockIndex ~= 0, :).Value == 20);
 Trial45Count = sum(tbl(tbl.BlockIndex ~= 0, :).Value == 45);
 
-% Display the count of occurrences
-disp("There are " + num2str(iBlock-1) + " blocks")
-disp("There are " + TrialBaselineCount + " baselines within the trials")
-disp("There are " + Trial20Count + " trials of a 20-angle degree")
-disp("There are " + Trial45Count + " trials of a 45-angle degree")
+if TrialBaselineCount == 0 || Trial20Count == 0 || Trial45Count == 0
+    count_error = true;
+    fprintf('Error: Incorrect count of baselines or trials.\n');
+% else
+%     fprintf('There are %d blocks\n', length(block_indices));
+%     fprintf('There are %d baselines within the trials\n', TrialBaselineCount);
+%     fprintf('There are %d trials of a 20-angle degree\n', Trial20Count);
+%     fprintf('There are %d trials of a 45-angle degree\n', Trial45Count);
+end
+
+% Summary of errors
+if ~baseline_error && ~trial_error && ~latency_sorted_error ...
+    && ~time_sorted_error && ~block_error && ~count_error
+    fprintf('All checks passed successfully.\n');
+else
+    error('Some checks failed. Please see the errors above.\n');
+end
 
 
-% STORE IN THE RIGHT STRUCTURE AND WAY
+
+
 
 % events = struct('type', {}, 'latency', {}, 'duration', {});
 events = struct('type', {}, 'latency', {});
 
-for t=1:events_count
+for t=1:height(tbl)
     events(t).type = tbl.Name{t};
     %events(t).duration = tbl.DurationComputed(t);
     events(t).latency = tbl.Latency(t);
@@ -167,18 +313,7 @@ if ~any(BlockStart)
         warning('Couldn''t find the start of the block in this file')
     end
 end
-% 
-% BlockEnd = strcmp({events.type}, 'BlockEnd');
-% if ~any(BlockEnd)
-%     LastTrialEnd = strcmp({events.type}, 'TrialEnd') & [events.TrialIndex] == 26;
-%     if any(LastTrialEnd)
-%         events(end+1) = events(LastTrialEnd);
-%         events(end).type = 'BlockEnd';
-%         events(end).latency = events(end-1).latency + 1;
-%     else
-%         warning('Couldn''t find the end of the block in this file')
-%     end
-% end
+
 
 
 return

@@ -22,18 +22,18 @@ dipfit_path = fileparts(which('pop_multifit'));
 % use standard BEM headmodel
 % change relevant fiducial labels so that it matches standard 5/10 template
 chaninfo = EEG.chaninfo;
-for f = 1:numel(chaninfo.nodatchans)
-    switch chaninfo.nodatchans(f).labels
-        case 'nas'
-            chaninfo.nodatchans(f).labels = 'Nz';
-        case 'lhj'
-            chaninfo.nodatchans(f).labels = 'LPA';
-        case 'rhj'
-            chaninfo.nodatchans(f).labels = 'RPA';
-        otherwise
-            error('Unknown fiducial name')
-    end
-end
+% for f = 1:numel(chaninfo.nodatchans)
+%     switch chaninfo.nodatchans(f).labels
+%         case 'nas'
+%             chaninfo.nodatchans(f).labels = 'Nz';
+%         case 'lhj'
+%             chaninfo.nodatchans(f).labels = 'LPA';
+%         case 'rhj'
+%             chaninfo.nodatchans(f).labels = 'RPA';
+%         otherwise
+%             error('Unknown fiducial name')
+%     end
+% end
 
 disp('Coregistering electrodes to 10-5 template...')
 % [~, transform] = coregister(EEG.chanlocs,...
@@ -43,7 +43,8 @@ disp('Coregistering electrodes to 10-5 template...')
    fullfile(dipfit_path, 'standard_BEM', 'elec','standard_1005.elc'), 'chaninfo1', chaninfo);
 
 % Exclude EOG channels
-chans2select = [EEG.chanlocs.urchan]';
+% chans2select = [EEG.chanlocs.urchan]'; % POL CHANGED
+chans2select = (1:1:128)';
 EEG_indices = strcmp({EEG.chanlocs.type}, 'EEG');
 chans2select = chans2select(EEG_indices);
 
