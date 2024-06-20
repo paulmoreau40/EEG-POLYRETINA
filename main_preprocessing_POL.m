@@ -6,7 +6,7 @@
 addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL')); %paul
 addpath('F:\PM_Polyretina\EEG_project\eeglab2024.0\');
 
-configEEGAFF2;
+configEEGPOL;
 
 skipImport = false; % Boolean to avoid running Mobilab step
 overwriteImport = false; % Boolean to force Mobilab step to happen anyway
@@ -21,8 +21,8 @@ skipDipoles = false; % Boolean to avoid the dipole fitting
 overwriteDipoles = false | overwriteICA; % Boolean to force the dipole fitting to happen anyway
 skipAutoLabeling = false; % Boolean to avoid the automatic labeling
 overwriteAutoLabeling = false | overwriteICA | (overwriteDipoles & study_config.doDipoleFitting); % Boolean to force IClabel to run anyway
-overwriteManualLabeling = false | overwriteAutoLabeling; % Boolean to force reviewing of IC labels manually
-overwriteSecondTempRej = false | overwriteManualLabeling; % Boolean to force second temporal rejection
+overwriteManualLabeling = true | overwriteAutoLabeling; % Boolean to force reviewing of IC labels manually
+%overwriteSecondTempRej = false | overwriteManualLabeling; % Boolean to force second temporal rejection
 for subject_ind = subject_inds
     if ~exist('ALLEEG','var')
         launchEEGLAB;
@@ -32,7 +32,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 2;
+    subject_ind = 6;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);
@@ -334,7 +334,7 @@ for subject_ind = subject_inds
             %     compsInspect(i).BrainWithNoise),compsInspect(i).Checkerboard),compsInspect(i).Doubts)));
             comp2review = compsInspect(i).Doubts;
             %comp2review = union(compsInspect(i).Brain,compsInspect(i).BrainWithNoise);
-            userDecision1 = input(sprintf('Review subject %s? ',subject));
+            userDecision1 = input(sprintf('Review subject %s? ',subject)); % 0 (no) or 1 (yes)
             if userDecision1
                 for c = 1:length(comp2review)
                     pop_prop_extended(EEG_labelled, 0, comp2review(c), NaN, {'freqrange',[1 60]}, {}, 1, 'ICLabel');
@@ -364,7 +364,9 @@ for subject_ind = subject_inds
         
         %Save the dataset
         pop_saveset(EEG_compRej, 'filename', N.postLabelingFile,'filepath', N.searchFolder_2arch_rej_ICcats);
-    elseif study_config.do_second_tempRej && (~exist([N.searchFolder_2arch_rej_ICcats N.finalFile],'file') || overwriteSecondTempRej)
+
+    %elseif study_config.do_second_tempRej && (~exist([N.searchFolder_2arch_rej_ICcats N.finalFile],'file') || overwriteSecondTempRej)
+    elseif ~exist([N.searchFolder_2arch_rej_ICcats N.finalFile],'file')
         clear EEG_labelled
         EEG_compRej = pop_loadset('filename', N.postLabelingFile,'filepath', N.searchFolder_2arch_rej_ICcats);
         [ALLEEG, EEG_compRej, CURRENTSET] = eeg_store(ALLEEG, EEG_compRej, CURRENTSET);

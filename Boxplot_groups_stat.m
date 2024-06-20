@@ -1,4 +1,4 @@
-% import the data of all participants
+ % import the data of all participants
 filename = fullfile('/Users/ilaria/Documents/MATLAB/data/EEG-AFF', 'MergedDatabase.xlsx');
 AllParticipants = table2struct(readtable(filename));
 

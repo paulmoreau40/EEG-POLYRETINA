@@ -203,7 +203,7 @@ study_config.number_of_dipoles = 1;
 % 'default'; [0.35,0.30,0.04,0.03,0.84,0.05,0.26];
 study_config.iclabel = 'default';
 study_config.ICdetect_thresholds = [0.35,0.30,0.04,0.03,0.84,0.05,0.26];
-study_config.cats2keep = {'Brain'};
+study_config.cats2keep = {'Brain','BrainWithNoise'};
 
 %% Epoching
 study_config.epochs.event = 'Observation';
