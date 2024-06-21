@@ -33,7 +33,7 @@ overwriteSpectraComputations = false;
 
 %% Considering a single participant:
 % subjects = [2]; % {study_config.subjects(subject_inds).id}; % Replace this when looping over all participants
-n_sbjs = length(subjects);
+%n_sbjs = length(subjects);
 
 % Output path:
 output_filepath = 'F:\PM_Polyretina\Data\analysis\3_single-subject-analysis\bemobil\autoMoBI';
@@ -45,11 +45,12 @@ end
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
 
-    for s = subject_inds
+    for subject_ind = subject_inds
     
         % 1. Load the data, filter the data
         % Overwrite subject for testing (COMMENT / DECOMMENT)
         subject_ind = 2;
+        
         subject = study_config.subjects(subject_ind).id;
         disp(['Subject ' subject]);
         study_config.current_subject = subject_ind;
@@ -85,25 +86,30 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
             disp('Creating EEG_trial_data structure...')
             EEG_trial_data = [];
             % Defining metaInfo structure:
-            num_trials = EEG_no_doublons.event(end).trial_id;
-            EEG_trial_data.metaInfo = struct('participant_id', [],...
-                'trial_id', [], 'field_of_view', [], 'auditory_cue', [], 'auditory_answer', []);
+            % num_trials = EEG2.event(end).trial_id;
+            % EEG_trial_data.metaInfo = struct('participant_id', [],...
+            %     'trial_id', [], 'field_of_view', [], 'auditory_cue', [], 'auditory_answer', []);
+            num_trials = EEG2.event(end).TrialIndex;
+            EEG_trial_data.metaInfo = struct('participant_id', [],'BlockIndex', [],...
+                'TrialIndex', [], 'field_of_view', []);
         end
         if ~exist('EEG_baseline_data','var')
             disp('Creating EEG_baseline_data structure...')
             EEG_baseline_data = [];
             % Defining metaInfo structure:
-            num_trials = EEG_no_doublons.event(end).trial_id;
-            EEG_baseline_data.metaInfo = struct('participant_id', [],...
-                'trial_id', [], 'field_of_view', [], 'auditory_cue', [], 'auditory_answer', []);
+            num_trials = EEG2.event(end).TrialIndex;
+            EEG_baseline_data.metaInfo = struct('participant_id', [],'BlockIndex', [],...
+                'TrialIndex', [], 'field_of_view', []);
         end
 
         % 4.1. Retrieve Segments of Interest & Metadata
 
-        EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG_no_doublons, EEG_trial_data,'detection_time',num2str(subjects(s)), false);
+        %EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data,'detection_time',num2str(subjects(s)), false);
+        EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data,'trialPOL',subject, false);
 
         % 4.2. Retrieving Baseline: One Baseline per trial        
-        EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG_no_doublons, EEG_baseline_data, 'black_baseline', num2str(subjects(s)), false);
+        %EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG2, EEG_baseline_data, 'black_baseline',num2str(subjects(s)), false);
+        EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG2, EEG_baseline_data, 'baselinePOL',subject, false);
             
     end
     % Removing initial shift which is created when concatenating metaInfo
