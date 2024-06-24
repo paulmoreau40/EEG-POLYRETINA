@@ -91,7 +91,7 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
             %     'trial_id', [], 'field_of_view', [], 'auditory_cue', [], 'auditory_answer', []);
             num_trials = EEG2.event(end).TrialIndex;
             EEG_trial_data.metaInfo = struct('participant_id', [],'BlockIndex', [],...
-                'TrialIndex', [], 'field_of_view', []);
+                'TrialIndex', [], 'FieldOfView', []);
         end
         if ~exist('EEG_baseline_data','var')
             disp('Creating EEG_baseline_data structure...')
@@ -99,17 +99,17 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
             % Defining metaInfo structure:
             num_trials = EEG2.event(end).TrialIndex;
             EEG_baseline_data.metaInfo = struct('participant_id', [],'BlockIndex', [],...
-                'TrialIndex', [], 'field_of_view', []);
+                'TrialIndex', [], 'FieldOfView', []);
         end
 
         % 4.1. Retrieve Segments of Interest & Metadata
 
         %EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data,'detection_time',num2str(subjects(s)), false);
-        EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data,'trialPOL',subject, false);
+        EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data,EEG_baseline_data,subject, false);
 
         % 4.2. Retrieving Baseline: One Baseline per trial        
         %EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG2, EEG_baseline_data, 'black_baseline',num2str(subjects(s)), false);
-        EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG2, EEG_baseline_data, 'baselinePOL',subject, false);
+        %EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG2, EEG_baseline_data, 'baselinePOL',subject, false);
             
     end
     % Removing initial shift which is created when concatenating metaInfo
