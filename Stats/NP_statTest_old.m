@@ -1,4 +1,4 @@
-function [clustered_stats, all_clusters, stats_surrog, pairwiseStats, history] = NP_statTest(data_conds, options_stats)
+function [clustered_stats, all_clusters, stats_surrog, pairwiseStats, history] = NP_statTest_old(data_conds, options_stats)
 % Non parametrical statistical test to compare multiple (2 or more) EEG epoched
 % conditions (typically ERSPs of 1 IC)
 % 1. Collect the trials of the experimental conditions in a single set.
@@ -16,73 +16,21 @@ function [clustered_stats, all_clusters, stats_surrog, pairwiseStats, history] =
 % Maris, E. & Oostenveld, R. Nonparametric statistical testing of EEG- and MEG-data. J. Neurosci. Methods 164, 177?190 (2007).
 %
 % Inputs:
-% data_conds    - Data struct with fields:
-%                   1 field per condition named as specified in the 'fields' option. The last
-%                       dimension of the matrices corresponds to the repetitions
-%                       along which you want the data average
-%                       (typically trials in SS analysis and subjects in MS analysis).
-%                       The first dimensions should be as indicated by the 'style' field in options.
-%                   'BaselineModel' string specifying the baseline model to
-%                       convert to dB or not. If the BaselineModel contains
-%                       '_Gain_Log', data will be converted to dB prior to
-%                       statistics computation. Else no operation will be
-%                       conducted on the data
-%%%%% Fields depending on the 'style':
-%                   'Times' vector of times
-%                   'Freqs' vector of freqs
-%                   'Chans' cell or vector of chans indices (can be a subset of the
-%                       total channel grid but keep order consistent with
-%                       corresponding EEG.chanlocs)
-%
-% options_stats - options structure containing the following fields:
-%                   'fields' cell of strings containing the name of each
-%                       condition (as inputed in data_conds)
-%                   'model' string specificying the statistical model used.
-%                       Supported: 'classic' or 'mixedEffects'
-%                   'style' Specify the type of data with a string.
-%                       Ex: 'timeXfreq' for ERSPs of a single channel/IC
-%                       Supported: 'freq', 'timeXfreq', 'chanXfreq'
-%                   'pairing' string indicating whether to compute paired
-%                       statistical tests. Supported: 'on' or 'off'.
-%                   'N_reps' Number of repetitions for the permutation
-%                       analysis. (may not be reached if above the theoretical
-%                       maximum of permutations available)
-%                   'reusePerms' boolean to indicate if you want to reuse
-%                       existing permutations (specified by the 'permutations' field).
-%                       Saves some time.
-%                   'permutations' (optional) only if reusePerms is true.
-%                       matrix of reps x trials (best practice is to use
-%                       the history returned by this script after a first run on the data).
-%                       !!! Check permutations consistency (do not reusePerms when changing conditions)
-%
-%%%%% Additional field required for clusteredStats function:
+% data_conds    - Data. Cell of matrices, 1 per condition. The last
+%                   dimension of the matrices corresponds to the repetitions
+%                   along which you want the data average (typically subjects
+%                   in MS analysis.)
+% options_stats - options structure containing at least the following fields:
+%                   'fields': cell of strings containing the name of each
+%                   condition (as inputed in data_conds)
+%                   'pairing': do you want to compute paired statistics or
+%                   not ('on'|'off')
+%                   'N-reps': Number of repetitions for the permutation
+%                   analysis.
 %                   'removeSmallestClusters': boolean indicating if you
 %                   want to exclude some very small clusters right away
 %                   (relatively to the size of the dataset). They will
 %                   probably never be significant in the end anyway.
-%                   'ElecFile' (optional) Only required if style is 'chanXfreq'.
-%                       Path to the manufacturer electrode file (.elc)
-%                   'MaxDeg' (optional) Only required if style is 'chanXfreq'.
-%                       Solid angle in degree: Limit to define neighbouring channels.
-%
-%%%%% fields specific to 'mixedEffects' model:
-%                   For each field specified in 'fields', a
-%                       'trialsInfo_(fieldName)' table containing all the
-%                       variables that are involved in the formula (see fitlme function)
-%                   'formula' formula for the lme (see fitlme function)
-%                   'MEterm' term of the formula that corresponds to the
-%                       contrast between conditions.
-%                   'original' boolean specifying whether the current
-%                       data at test is the original distribution of trials (true)
-%                       or a permuation (false)
-%                   %%% The last three options are for saving purposes only
-%                   (custom to 4SC experiment)
-%                   'saveFolder' path to the saving folder 
-%                   'modelData' string specifying the data used for
-%                       statistics (ex: 'test' for test trials only)
-%                   'ROI' name of the ROI from which the data is extracted.
-%                       ex: 'RSC', 'PPA', 'OPA'
-%
 %
 % Outputs:
 %   cluster_stats   - Table grouping a information summary about each cluster.
@@ -94,26 +42,19 @@ function [clustered_stats, all_clusters, stats_surrog, pairwiseStats, history] =
 %                       on the same permutation occurences as for the 3
 %                       conditions analysis. This structure summarizes the
 %                       results. Can be used for post-hoc statistics.
-%   history         - history of permuations computed in this script.
-%                       matrix of N_reps x total trials over the conditions.
-%                       For each rep, the line indicates how to shuffle
-%                       trials between conditions.
+
 
 n_conds = length(options_stats.fields);
+%n_subjs = length(data_conds.Subjects);
 if strcmp(options_stats.pairing, 'on')
-    siz = size(data_conds.(options_stats.fields{1}));
-    n_trials = siz(end);
+    n_trials = size(data_conds.(options_stats.fields{1}),3);
 else
     n_trials = [];
     for c = 1:n_conds
-        siz = size(data_conds.(options_stats.fields{c}));
-        n_trials = [n_trials, siz(end)];
+        n_trials = [n_trials, size(data_conds.(options_stats.fields{c}),3)];
     end
 end
-
-if strcmp(options_stats.style, 'chanXfreq')
-    options_stats.Chans = data_conds.Chans; 
-end
+%options_stats.n_subjs = n_subjs;
 
 % Do the test on original data:
 disp('Testing original data')
@@ -126,8 +67,7 @@ for c = 1:n_conds
     end
 end
 
-options_stats.original = true;
-[~, all_statVal, all_clusters] = clusteredStats(data4stats, options_stats);
+[~, all_statVal, all_clusters, options_stats] = clusteredStats(data4stats, options_stats);
 
 pairwiseStats = struct();
 if n_conds == 3
@@ -139,7 +79,7 @@ if n_conds == 3
         pairwiseStats.(['Pair' num2str(p)]).Conditions = options_stats.fields(inds2keep);
         switch options_stats.model
             case 'classic'
-                [~, all_statVal_pair, all_clusters_pair] = clusteredStats(data4stats(inds2keep), options_stats2);
+                [~, all_statVal_pair, all_clusters_pair, ~] = clusteredStats(data4stats(inds2keep), options_stats2);
                 pairwiseStats.(['Pair' num2str(p)]).StatValsData = all_statVal_pair;
                 pairwiseStats.(['Pair' num2str(p)]).ClustersData = all_clusters_pair;
             case 'mixedEffects'
@@ -162,7 +102,6 @@ if isempty(all_statVal)
     stats_surrog = [];
     history = 1:n_trials*n_conds;
 else
-    options_stats.original = false;
     if strcmp(options_stats.pairing, 'on')
         n_tot = n_trials*n_conds;
         maxReps_th = factorial(n_conds)^n_trials;
@@ -182,8 +121,7 @@ else
         progressBar = waitbar(0,'Initializing', 'Name','NP statistical test');
         for rep = 1:maxReps
             if options_stats.reusePerms
-                % The first one is always the original data organization
-                permutation_inds = options_stats.permutations(rep+1,:);
+                permutation_inds = options_stats.permutations(rep,:);
             else
                 permutation_inds = newRandomPartition(history, n_tot, 'on', n_conds, n_trials);
             end
@@ -193,12 +131,12 @@ else
                     % Create new data4stats, keep options_stats
                     [data4stats, ~, history] = createPermutationData(data_conds, permutation_inds,...
                         n_conds, n_trials, 'on', history, options_stats);
-                    [stats_surrog(rep,1),~,~] = clusteredStats(data4stats, options_stats);
+                    [stats_surrog(rep,1),~,~, ~] = clusteredStats(data4stats, options_stats);
                 case 'mixedEffects'
                     % Create new data4stats, create new options_stats
                     [data4stats, options_stats_perm, history] = createPermutationData(data_conds, permutation_inds,...
                         n_conds, n_trials, 'on', history, options_stats);
-                    [stats_surrog_temp,~,~] = clusteredStats(data4stats, options_stats_perm);
+                    [stats_surrog_temp,~,~,~] = clusteredStats(data4stats, options_stats_perm);
             end
             
             if n_conds == 2 && strcmp(options_stats.model, 'mixedEffects')
@@ -212,7 +150,7 @@ else
                     options_stats2.fields = options_stats.fields(inds2keep);
                     switch options_stats.model
                         case 'classic'
-                            [stats_surrog(rep,p+1),~,~] =...
+                            [stats_surrog(rep,p+1),~,~, ~] =...
                                 clusteredStats(data4stats(inds2keep), options_stats2);
                         case 'mixedEffects'
                             stats_surrog(rep,p+1) = stats_surrog_temp.(['Pair' num2str(p)]);
@@ -253,22 +191,22 @@ else
         progressBar = waitbar(0,'Initializing', 'Name','NP statistical test');
         for rep = 1:maxReps
             if options_stats.reusePerms
-                % The first one is always the original data organization
-                permutation_inds = options_stats.permutations(rep+1,:);
+                permutation_inds = options_stats.permutations(rep,:);
             else
                 permutation_inds = newRandomPartition(history, n_tot, 'off', n_conds, n_trials);
             end
+            
             switch options_stats.model
                 case 'classic'
                     % Create new data4stats, keep options_stats
                     [data4stats, ~, history] = createPermutationData(data_conds, permutation_inds,...
                         n_conds, n_trials, 'off', history, options_stats);
-                    [stats_surrog(rep,1),~,~] = clusteredStats(data4stats, options_stats);
+                    [stats_surrog(rep,1),~,~, ~] = clusteredStats(data4stats, options_stats);
                 case 'mixedEffects'
                     % Create new data4stats, create new options_stats
                     [data4stats, options_stats_perm, history] = createPermutationData(data_conds, permutation_inds,...
                         n_conds, n_trials, 'off', history, options_stats);
-                    [stats_surrog_temp,~,~] = clusteredStats(data4stats, options_stats_perm);
+                    [stats_surrog_temp,~,~, ~] = clusteredStats(data4stats, options_stats_perm);
             end
             
             
@@ -283,7 +221,7 @@ else
                     options_stats2.fields = options_stats.fields(inds2keep);
                     switch options_stats.model
                         case 'classic'
-                            [stats_surrog(rep,p+1),~,~] =...
+                            [stats_surrog(rep,p+1),~,~, ~] =...
                                 clusteredStats(data4stats(inds2keep), options_stats2);
                         case 'mixedEffects'
                             stats_surrog(rep,p+1) = stats_surrog_temp.(['Pair' num2str(p)]);
@@ -309,39 +247,18 @@ else
     ClusterStatVal = all_statVal;
     ClusterPval = all_pVals;
     
-    switch options_stats.style
-        case 'timeXfreq'
-            % Extracting median time sample and freq of the cluster
-            medSamp = zeros(n_clust,1);
-            medTime = zeros(n_clust,1);
-            medFreq = zeros(n_clust,1);
-            for cl = 1:n_clust
-                [clust_freqs, clust_samps] = find(all_clusters == cl);
-                medSamp(cl) = round(median(clust_samps));
-                medTime(cl) = data_conds.Times(round(median(clust_samps)));
-                medFreq(cl) = data_conds.Freqs(round(median(clust_freqs)));
-            end
-            
-            clustered_stats = table(ClusterID, ClusterStatVal, ClusterPval, medSamp, medTime, medFreq);
-        case 'freq'
-            medFreq = zeros(n_clust,1);
-            for cl = 1:n_clust
-                clust_freqs = find(all_clusters == cl);
-                medFreq(cl) = data_conds.Freqs(round(median(clust_freqs)));
-            end
-            clustered_stats = table(ClusterID, ClusterStatVal, ClusterPval, medFreq);
-        case 'chanXfreq'
-            ChansSpan = cell(n_clust,1);
-            medFreq = zeros(n_clust,1);
-            for cl = 1:n_clust
-                [clust_chans, clust_freqs] = find(all_clusters == cl);
-                ChansSpan{cl} = data_conds.Chans(unique(clust_chans));
-                medFreq(cl) = data_conds.Freqs(round(median(clust_freqs)));
-            end
-            clustered_stats = table(ClusterID, ClusterStatVal, ClusterPval, ChansSpan, medFreq);
-        otherwise
-            error('Unknown style')
+    % Extracting median time sample and freq of the cluster
+    medSamp = zeros(n_clust,1);
+    medTime = zeros(n_clust,1);
+    medFreq = zeros(n_clust,1);
+    for cl = 1:n_clust
+        [clust_freqs, clust_samps] = find(all_clusters == cl);
+        medSamp(cl) = round(median(clust_samps));
+        medTime(cl) = data_conds.Times(round(median(clust_samps)));
+        medFreq(cl) = data_conds.Freqs(round(median(clust_freqs)));
     end
+    
+    clustered_stats = table(ClusterID, ClusterStatVal, ClusterPval, medSamp, medTime, medFreq);
     
     if n_conds ==3
         for p = 1:3
@@ -427,7 +344,6 @@ end
         % (number of trials per condition)
         
         data4stats = cell(1,n_conds);
-        n_dim = length(size(data_conds.(options_stats.fields{1})));
         
         newhist_line = [];
         for cnd = 1:n_conds
@@ -470,22 +386,12 @@ end
                     else
                         trial = cond_inds(tr) - sum(n_trials(1:field-1));
                     end
-                end                
+                end
                 
-                if n_dim == 2
-                    if contains(data_conds.BaselineModel, '_Gain_Log')
-                        data_cond(:,tr) = 10.*log10(data_conds.(options_stats.fields{field})(:,trial));
-                    else
-                        data_cond(:,tr) = data_conds.(options_stats.fields{field})(:,trial);
-                    end
-                elseif n_dim == 3
-                    if contains(data_conds.BaselineModel, '_Gain_Log')
-                        data_cond(:,:,tr) = 10.*log10(data_conds.(options_stats.fields{field})(:,:,trial));
-                    else
-                        data_cond(:,:,tr) = data_conds.(options_stats.fields{field})(:,:,trial);
-                    end
+                if contains(data_conds.BaselineModel, '_Gain_Log')
+                    data_cond(:,:,tr) = 10.*log10(data_conds.(options_stats.fields{field})(:,:,trial));
                 else
-                    % More than 3 dimensional data not supported.
+                    data_cond(:,:,tr) = data_conds.(options_stats.fields{field})(:,:,trial);
                 end
                 
                 if strcmp(options_stats.model, 'mixedEffects')

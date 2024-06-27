@@ -1,4 +1,6 @@
-function [spectrum_data_20,spectrum_data_45, spectrum_data_110] = format_data_for_multisubject_stats(EEG_data, freq_boundaries)
+% function [spectrum_data_20,spectrum_data_45, spectrum_data_110] = format_data_for_multisubject_stats(EEG_data, freq_boundaries)
+function [spectrum_data_20,spectrum_data_45] = format_data_for_multisubject_stats(EEG_data, freq_boundaries)
+
 % Computing and formating the spectrums to give to permutation analysis
 %
 %  INPUT
@@ -16,14 +18,14 @@ function [spectrum_data_20,spectrum_data_45, spectrum_data_110] = format_data_fo
 % well as removing frequencies that are not of interst
 [EEG_selected_spectrum_20] = extract_trials_according_to_brainregion_and_frequency(EEG_data, 'all', freq_boundaries, 1, 20, 'absolute');
 [EEG_selected_spectrum_45] = extract_trials_according_to_brainregion_and_frequency(EEG_data, 'all', freq_boundaries, 1, 45, 'absolute');
-[EEG_selected_spectrum_110] = extract_trials_according_to_brainregion_and_frequency(EEG_data, 'all', freq_boundaries, 1, 110, 'absolute');
+% [EEG_selected_spectrum_110] = extract_trials_according_to_brainregion_and_frequency(EEG_data, 'all', freq_boundaries, 1, 110, 'absolute');
 
 % Now averaging over every trial per participant to get final structure of
 % interest
 
 spectrum_data_20 = [];
 spectrum_data_45 = [];
-spectrum_data_110 = [];
+% spectrum_data_110 = [];
 
 % Getting list of participants considered:
 participant_list = unique({EEG_data.metaInfo(:).participant_id});
@@ -33,9 +35,9 @@ subject_count = 1;
 
 for participant = 1:length(participant_list)
     % Retrieving for each FoV the spectrums and averaging over all trials
-    spectrum_data_20(:,:,subject_count) = mean(EEG_selected_spectrum_20.(['P' participant_list{participant}]).relative_spectrum, 3);
-    spectrum_data_45(:,:,subject_count) = mean(EEG_selected_spectrum_45.(['P' participant_list{participant}]).relative_spectrum, 3);
-    spectrum_data_110(:,:,subject_count) = mean(EEG_selected_spectrum_110.(['P' participant_list{participant}]).relative_spectrum, 3);
+    spectrum_data_20(:,:,subject_count) = mean(EEG_selected_spectrum_20.(participant_list{participant}).relative_spectrum, 3);
+    spectrum_data_45(:,:,subject_count) = mean(EEG_selected_spectrum_45.(participant_list{participant}).relative_spectrum, 3);
+    % spectrum_data_110(:,:,subject_count) = mean(EEG_selected_spectrum_110.(['P' participant_list{participant}]).relative_spectrum, 3);
     
      subject_count = subject_count + 1;
 end

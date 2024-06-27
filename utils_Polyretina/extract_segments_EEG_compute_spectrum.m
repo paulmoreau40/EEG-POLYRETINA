@@ -1,4 +1,4 @@
-function EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG, EEG_trial_data, EEG_baseline_data, participant_id, make_plot)
+function [EEG_trial_data, EEG_baseline_data] = extract_segments_EEG_compute_spectrum(EEG, EEG_trial_data, EEG_baseline_data, participant_id, make_plot)
 % Custom function to extract baselines of interest and return a structure with the segmented regions of interest and associated metadata
 %
 % Inputs:
@@ -77,9 +77,9 @@ for trial = 1:n_tot_trials
     end
 
     if isBaseline
-        EEG_baseline_data.metaInfo(current_line_baseline + bl -1).participant_id = participant_id;
-        EEG_baseline_data.metaInfo(current_line_baseline + bl -1).BlockIndex = bl;
-        EEG_baseline_data.metaInfo(current_line_baseline + bl -1).TrialIndex = tr_inBl;
+        EEG_baseline_data.metaInfo(current_line_baseline + bl).participant_id = participant_id;
+        EEG_baseline_data.metaInfo(current_line_baseline + bl).BlockIndex = bl;
+        EEG_baseline_data.metaInfo(current_line_baseline + bl).TrialIndex = tr_inBl;
 
         [spectrumBaseline(:,:,bl), freqs, ~, ~, ~] =...
         spectopo(data, size(data,2), EEG.srate,...
@@ -94,10 +94,10 @@ for trial = 1:n_tot_trials
         'plotmean', 'off',...
         'verbose','off');
     else
-        EEG_trial_data.metaInfo(current_line_trial + i_trial -1).participant_id = participant_id;
-        EEG_trial_data.metaInfo(current_line_trial + i_trial -1).BlockIndex = bl;
-        EEG_trial_data.metaInfo(current_line_trial + i_trial -1).TrialIndex = tr_inBl;
-        EEG_trial_data.metaInfo(current_line_trial + i_trial -1).FieldOfView = FoV(bl);
+        EEG_trial_data.metaInfo(current_line_trial + i_trial).participant_id = participant_id;
+        EEG_trial_data.metaInfo(current_line_trial + i_trial).BlockIndex = bl;
+        EEG_trial_data.metaInfo(current_line_trial + i_trial).TrialIndex = tr_inBl;
+        EEG_trial_data.metaInfo(current_line_trial + i_trial).FieldOfView = FoV(bl);
 
         [spectrumTrials(:,:,i_trial), freqs, ~, ~, ~] =...
         spectopo(data, size(data,2), EEG.srate,...
@@ -115,8 +115,10 @@ for trial = 1:n_tot_trials
         i_trial = i_trial + 1;
     end
 
-    disp(['Finished computing spectrum for trial ' num2str(i_trial) '/' num2str(140) ' for Participant ' participant_id])
-    
+    disp(['Finished computing spectrum for trial/baseline ' num2str(trial) '/' num2str(n_tot_trials) ' for Participant ' participant_id])
+    if trial == 205
+        trial;
+    end
 end
 
 % COMPLETE FOV FOR BASELINES
@@ -126,7 +128,7 @@ if length(FoV) ~= 70
 end
 
 for i=1:length(FoV)
-    EEG_baseline_data.metaInfo(current_line_baseline + i -1).FieldOfView = FoV(i);
+    EEG_baseline_data.metaInfo(current_line_baseline + i).FieldOfView = FoV(i);
 end
 
 % FoV = num2cell(FoV);

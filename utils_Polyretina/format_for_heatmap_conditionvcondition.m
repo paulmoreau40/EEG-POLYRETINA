@@ -1,4 +1,4 @@
-function [data_heatmap_20v45, data_heatmap_20v110, data_heatmap_45v110] = format_for_heatmap_conditionvcondition(data_heatmap_anova_conditionvscondition_cluster_id, pairwise_stats_conditionvcondition, alpha_pair, spectrum_trial_20, spectrum_trial_45, spectrum_trial_110)
+function [data_heatmap_20v45] = format_for_heatmap_conditionvcondition(data_heatmap_anova_conditionvscondition_cluster_id, pairwise_stats_conditionvcondition, alpha_pair, spectrum_trial_20, spectrum_trial_45) %data_heatmap_20v110, data_heatmap_45v110
 % Function to create heatmap data to compae each field of view
 % 
 % INPUT

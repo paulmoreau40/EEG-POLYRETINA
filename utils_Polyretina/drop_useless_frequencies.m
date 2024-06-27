@@ -20,15 +20,15 @@ participants = unique({EEG_relative_spectrum.metaInfo(:).participant_id});
 for p = 1:length(participants)
     
     % Retrieve indicies of frequencies which are out of the scope of interest (meaning beyond filtering frequencies)
-    OoI_frequencies_indices = find((EEG_relative_spectrum.(['P' participants{p}]).freqs < low_freq) + (EEG_relative_spectrum.(['P' participants{p}]).freqs > high_freq));
+    OoI_frequencies_indices = find((EEG_relative_spectrum.(participants{p}).freqs < low_freq) + (EEG_relative_spectrum.(participants{p}).freqs > high_freq));
     
     if ~isempty(OoI_frequencies_indices)
         if strcmp(absolute_or_relative, 'absolute')
-            EEG_relative_spectrum.(['P' participants{p}]).spectrum(:,OoI_frequencies_indices,:) = [];
-            EEG_relative_spectrum.(['P' participants{p}]).freqs(OoI_frequencies_indices) = [];
+            EEG_relative_spectrum.(participants{p}).spectrum(:,OoI_frequencies_indices,:) = [];
+            EEG_relative_spectrum.(participants{p}).freqs(OoI_frequencies_indices) = [];
         elseif strcmp(absolute_or_relative, 'relative')
-            EEG_relative_spectrum.(['P' participants{p}]).relative_spectrum(:,OoI_frequencies_indices,:) = [];
-            EEG_relative_spectrum.(['P' participants{p}]).freqs(OoI_frequencies_indices) = [];
+            EEG_relative_spectrum.(participants{p}).relative_spectrum(:,OoI_frequencies_indices,:) = [];
+            EEG_relative_spectrum.(participants{p}).freqs(OoI_frequencies_indices) = [];
         else
             error('Error in entering whether "absolute" or "relative"');
         end
