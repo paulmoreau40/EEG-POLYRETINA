@@ -29,10 +29,10 @@ end
 addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL')); %paul
 addpath('F:\PM_Polyretina\EEG_project\eeglab2024.0\');
 
-overwriteSpectraComputations = true;
+overwriteSpectraComputations = false;
 
 %% Considering a single participant:
-% subjects = [2]; % {study_config.subjects(subject_inds).id}; % Replace this when looping over all participants
+%subjects = [2]; % {study_config.subjects(subject_inds).id}; % Replace this when looping over all participants
 %n_sbjs = length(subjects);
 
 % Output path:
@@ -42,7 +42,8 @@ if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
-subject_inds = [2, 6];
+subject_inds = [1, 2, 3, 6, 8];
+%subject_inds = 8;
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
@@ -133,7 +134,7 @@ choice_of_baseline = 'black'; % Choose: 'black', '110°'
 choice_of_black_baseline = 'one_per_trial'; % Choose: 'one_per_trial', 'one_per_FoV', 'one_for_all'
 
 % Defining which electrodes we are considering for the respective brain regions
-frontal_electrodes = {'LL3','LL4', 'L4', 'Z3', 'Z4', 'R4', 'RR3', 'RR4'};
+frontal_electrodes ={'Z1','Z2','Z3','Z4','Z5','L1','L2','L3','L4','L5','LL1','LL2','LL3','LL4','LL5','R1','R2','R3','R4','R5','RR1','RR2','RR3','RR4','RR5'}; %{'LL3','LL4', 'L4', 'Z3', 'Z4', 'R4', 'RR3', 'RR4'};
 %{'Z1','Z2','Z3','Z4','Z5','L1','L2','L3','L4','L5','LL1','LL2','LL3','LL4','LL5','R1','R2','R3','R4','R5','RR1','RR2','RR3','RR4','RR5'};
 parietal_electrodes = {'L8', 'R8', 'Z8', 'LL8', 'RR8'};
 %{'LL6','LL7','LL8','RR6','RR7','RR8','RA3','RA4','LA3','LA4','L7','L8','R7','R8'};

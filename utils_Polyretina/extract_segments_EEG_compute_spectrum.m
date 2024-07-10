@@ -25,6 +25,18 @@ end_segment_baseline = {'BaselineEnd'};
 current_line_baseline = size({EEG_baseline_data.metaInfo.TrialIndex},2);
 spectrumBaseline = [];
 
+
+if ismember(participant_id,'P001') % dont know why but Coarse baseline present
+    EEG.event(end) = [];
+    EEG.event(253).latency = 410800; % instead of 411461 to have more baseline than just 125
+end
+
+if ismember(participant_id,'P008') % dont know why but Coarse baseline present
+    EEG.event(347).latency = 582817;
+    EEG.event(370).latency = 620000;
+end
+
+
 n_tot_trials = EEG.event(end).BlockIndex * EEG.event(end).TrialIndex;
 blockLength = 3;
 n_blocks = 70;
@@ -69,6 +81,10 @@ for trial = 1:n_tot_trials
 
     data = EEG.data(:,round(EEG.event(start_idx).latency):round(EEG.event(end_idx).latency));
     
+    if size(data,2) < 500
+        warning('data too small for the power spectrum computation ? (< 500)')
+    end
+
     if make_plot
         close all; % to avoid spectopo bugs
         plot_option = 'on';
@@ -116,7 +132,7 @@ for trial = 1:n_tot_trials
     end
 
     disp(['Finished computing spectrum for trial/baseline ' num2str(trial) '/' num2str(n_tot_trials) ' for Participant ' participant_id])
-    if trial == 205
+    if trial == 347
         trial;
     end
 end

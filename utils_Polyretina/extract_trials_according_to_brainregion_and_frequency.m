@@ -34,6 +34,8 @@ previous_participant = EEG_relative_spectrum.metaInfo(1).participant_id;
 count_trial = 1;
 count_trial_bis = 1;
 
+count_meta = 1;
+
 if bool_divide_by_FoV
     disp(['Keeping only trials of interst for FoV: ' num2str(wanted_FoV) '...'])
     % 2. Loop over all the trials to keep only with field of view of interest
@@ -56,9 +58,9 @@ if bool_divide_by_FoV
             % auditory_answer = EEG_relative_spectrum.metaInfo(trial).auditory_answer;
 
             % Save metaInfo that is kept in new structure
-            kept_participant_id = [kept_participant_id; current_participant];
-            kept_trial_id = [kept_trial_id; trial_id];
-            kept_field_of_view = [kept_field_of_view; current_FoV];
+            % kept_participant_id = [kept_participant_id; current_participant];
+            % kept_trial_id = [kept_trial_id; trial_id];
+            % kept_field_of_view = [kept_field_of_view; current_FoV];
             % kept_auditory_cue = [kept_auditory_cue; auditory_cue];
             % kept_auditory_answer = [kept_auditory_answer; auditory_answer];
 
@@ -77,19 +79,21 @@ if bool_divide_by_FoV
                     error('Type of spectra computed incorrect: type either "absolute" or "relative"');
             end
 
-            EEG_selected_spectrum_FoV.metaInfo(count_trial).participant_id = current_participant;
-            EEG_selected_spectrum_FoV.metaInfo(count_trial).TrialIndex = trial_id;
-            EEG_selected_spectrum_FoV.metaInfo(count_trial).FieldOfView = current_FoV;
+            EEG_selected_spectrum_FoV.metaInfo(count_meta).participant_id = current_participant;
+            EEG_selected_spectrum_FoV.metaInfo(count_meta).TrialIndex = trial_id;
+            EEG_selected_spectrum_FoV.metaInfo(count_meta).FieldOfView = current_FoV;
             
 
             % Updating counting variables
             count_trial = count_trial + 1;
+            count_meta = count_meta + 1;
             previous_participant = current_participant;
         end
         count_trial_bis = count_trial_bis + 1;
     end
     
 else
+    error("case not modified for polyretina ?")
     disp('Consider all the Fields of View:...')
     % 2. Loop over all the trials
     for trial = 1:total_num_trials
