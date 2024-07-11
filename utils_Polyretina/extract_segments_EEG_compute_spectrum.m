@@ -12,6 +12,7 @@ function [EEG_trial_data, EEG_baseline_data] = extract_segments_EEG_compute_spec
 % EEG_trial_data            = Struct with EEG segments and their respective
 %                             time trials and metadata
 
+make_plot = 1;
 
 % TRIALS
 begin_segment_trial = {'TrialStart'};
@@ -59,8 +60,7 @@ for trial = 1:n_tot_trials
     elseif ismember(EEG.event(trial_idx(end)).TrialType, "Baseline")
         isBaseline = 1;
     else
-        % CHANGE IN THE FUTURE: the angle is not written in TrialType for
-        % baselines
+        % save the angle value to update later the baselines angles
         FoV(bl) = str2double(regexp(EEG.event(trial_idx(end)).TrialType, '\d+', 'match'));
     end
 
@@ -132,9 +132,9 @@ for trial = 1:n_tot_trials
     end
 
     disp(['Finished computing spectrum for trial/baseline ' num2str(trial) '/' num2str(n_tot_trials) ' for Participant ' participant_id])
-    if trial == 347
-        trial;
-    end
+    % if trial == 347
+    %     trial;
+    % end
 end
 
 % COMPLETE FOV FOR BASELINES

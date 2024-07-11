@@ -145,7 +145,6 @@ for i = 1:length(baseline_start_indices)
         new_rows = [new_rows; new_row];
     end
 end
-
 for i = 1:height(new_rows)
     insert_index = baseline_start_indices(i) + i - 1; % Adjust the index to account for inserted rows
     tbl = [tbl(1:insert_index, :); new_rows(i, :); tbl(insert_index + 1:end, :)];
@@ -155,6 +154,11 @@ end
 tbl.DurationComputed = [diff(tbl.Time); 0];
 % tbl.TimeZeroed = tbl.Time -  tbl.Time(1);
 
+
+
+if strcmp(subject, 'P009')
+    tbl(349:end,:) = [];
+end
 
 
 
@@ -259,15 +263,14 @@ end
 TrialBaselineCount = sum(tbl(tbl.BlockIndex ~= 0, :).Value == -1) / 2;
 Trial20Count = sum(tbl(tbl.BlockIndex ~= 0, :).Value == 20);
 Trial45Count = sum(tbl(tbl.BlockIndex ~= 0, :).Value == 45);
+fprintf('There are %d blocks\n', length(block_indices));
+fprintf('There are %d baselines within the trials\n', TrialBaselineCount);
+fprintf('There are %d trials of a 20-angle degree\n', Trial20Count);
+fprintf('There are %d trials of a 45-angle degree\n', Trial45Count);
 
 if TrialBaselineCount == 0 || Trial20Count == 0 || Trial45Count == 0
     count_error = true;
     fprintf('Error: Incorrect count of baselines or trials.\n');
-% else
-%     fprintf('There are %d blocks\n', length(block_indices));
-%     fprintf('There are %d baselines within the trials\n', TrialBaselineCount);
-%     fprintf('There are %d trials of a 20-angle degree\n', Trial20Count);
-%     fprintf('There are %d trials of a 45-angle degree\n', Trial45Count);
 end
 
 % Summary of errors

@@ -821,6 +821,8 @@ for i_filename = 1:length(study_config.filenames)
     
     Data_all.event = all_events;
     %Data_all.urevent = all_events;
+
+    Data_save = Data_all; % to keep old version of Data_all before loadset
     
     % Save file
     if ~isfolder(output_filepath)
