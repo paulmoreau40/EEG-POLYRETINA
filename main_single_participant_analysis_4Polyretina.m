@@ -43,7 +43,7 @@ if ~exist(output_filepath, 'dir')
 end
 
 %subject_inds = [1, 2, 3, 6, 8];
-subject_inds = 8;
+subject_inds = 9;
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
@@ -141,8 +141,8 @@ parietal_electrodes = {'L8', 'R8', 'Z8', 'LL8', 'RR8'};
 occipital_electrodes = {'Z12', 'Z11','Z10','R11','L11','R12','L12'};
 
 % Which Electrodes to consider for Brain Regions of Interest:
-brain_region_chosen = occipital_electrodes; % 'occipital_electrodes', 'parietal_electrodes', and 'frontal_electrodes'
-brain_region_name = 'Occipital'; % 'Occipital', 'Parietal', 'Frontal'
+brain_region_chosen = frontal_electrodes; % 'occipital_electrodes', 'parietal_electrodes', and 'frontal_electrodes'
+brain_region_name = 'Frontal'; % 'Occipital', 'Parietal', 'Frontal'
 
 % Decide which plots to make:
 plot_scale = 'dB'; % Choose: 'linear', 'dB'

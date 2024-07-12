@@ -2,16 +2,18 @@ function EEG = events_check_EEGPOL(EEG, cfg)
 
 %% Specifics of the experiment
 n_Trials = 210;
-n_Blocks = 70; % not very useful in the hand because of angles randomisation, but still present
+n_Blocks = 70;
 blockLength = floor(n_Trials/n_Blocks);
 
-%% Events
+subject = cfg.subjects(cfg.current_subject).id;
+if strcmp(subject, 'P009')
+    n_Trials = 165;
+end
+
 
 events = EEG.event;
 evts_noBounds = events(~strcmp({events.type},'boundary'));
-%missing_base_start = false;
 
-%% Prepare columns of the dataset
 TrialInd = nan(n_Trials,1);
 BlockInd = nan(n_Trials,1);
 TrialType = cell(n_Trials,1);
@@ -28,13 +30,7 @@ Angle45_perc = nan(n_Trials,1);
 
 
 
-%% Create useful variables
-% startTrialEvents = contains({evts_noBounds.type},'BaseStart'); %BaseStart
-%obsStartEvents = strcmp({evts_noBounds.type},'ObsStart');
-%questionStartEvents = strcmp({evts_noBounds.type},'QuestionStart');
-%exploStartEvents = strcmp({evts_noBounds.type},'ExploStart');
-% endTrialEvents = strcmp({evts_noBounds.SoundName},'Close');
-% walkInstructEvents = strcmp({evts_noBounds.SoundName},'Walk');
+
 
 %% Loop over trials
 for tr = 1:n_Trials

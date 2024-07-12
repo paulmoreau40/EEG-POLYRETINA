@@ -12,7 +12,7 @@ function [EEG_trial_data, EEG_baseline_data] = extract_segments_EEG_compute_spec
 % EEG_trial_data            = Struct with EEG segments and their respective
 %                             time trials and metadata
 
-make_plot = 1;
+%make_plot = 1;
 
 % TRIALS
 begin_segment_trial = {'TrialStart'};
