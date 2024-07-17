@@ -32,10 +32,16 @@ if ismember(participant_id,'P001') % dont know why but Coarse baseline present
     EEG.event(253).latency = 410800; % instead of 411461 to have more baseline than just 125
 end
 
-if ismember(participant_id,'P008') % dont know why but Coarse baseline present
+if ismember(participant_id,'P008')
     EEG.event(347).latency = 582817;
     EEG.event(370).latency = 620000;
 end
+
+
+if ismember(participant_id,'P007')
+    EEG.event(43).latency = 72833; % baseline -> 859 samples (instead of 76)
+end
+
 
 
 n_tot_trials = EEG.event(end).BlockIndex * EEG.event(end).TrialIndex;
@@ -43,7 +49,7 @@ blockLength = 3;
 n_blocks = 70;
 i_trial = 1;
 
-FoV = zeros(n_blocks,1);
+FoV = [];
 
 for trial = 1:n_tot_trials
     % Resetting values to identify if missing tag:
@@ -139,9 +145,9 @@ end
 
 % COMPLETE FOV FOR BASELINES
 
-if length(FoV) ~= 70
-    error("Not 70 blocks")
-end
+% if length(FoV) ~= 70
+%     error("Not 70 blocks")
+% end
 
 for i=1:length(FoV)
     EEG_baseline_data.metaInfo(current_line_baseline + i).FieldOfView = FoV(i);

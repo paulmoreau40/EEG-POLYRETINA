@@ -42,8 +42,8 @@ if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
-%subject_inds = [1, 2, 3, 6, 8];
-subject_inds = 9;
+subject_inds = [1, 2, 3, 6, 7, 8];
+% subject_inds = 7;
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
@@ -136,13 +136,13 @@ choice_of_black_baseline = 'one_per_trial'; % Choose: 'one_per_trial', 'one_per_
 % Defining which electrodes we are considering for the respective brain regions
 frontal_electrodes ={'Z1','Z2','Z3','Z4','Z5','L1','L2','L3','L4','L5','LL1','LL2','LL3','LL4','LL5','R1','R2','R3','R4','R5','RR1','RR2','RR3','RR4','RR5'}; %{'LL3','LL4', 'L4', 'Z3', 'Z4', 'R4', 'RR3', 'RR4'};
 %{'Z1','Z2','Z3','Z4','Z5','L1','L2','L3','L4','L5','LL1','LL2','LL3','LL4','LL5','R1','R2','R3','R4','R5','RR1','RR2','RR3','RR4','RR5'};
-parietal_electrodes = {'L8', 'R8', 'Z8', 'LL8', 'RR8'};
+parietal_electrodes = {'LL6','LL7','LL8','RR6','RR7','RR8','RA3','RA4','LA3','LA4','L7','L8','R7','R8'}; %{'L8', 'R8', 'Z8', 'LL8', 'RR8'};
 %{'LL6','LL7','LL8','RR6','RR7','RR8','RA3','RA4','LA3','LA4','L7','L8','R7','R8'};
 occipital_electrodes = {'Z12', 'Z11','Z10','R11','L11','R12','L12'};
 
 % Which Electrodes to consider for Brain Regions of Interest:
-brain_region_chosen = frontal_electrodes; % 'occipital_electrodes', 'parietal_electrodes', and 'frontal_electrodes'
-brain_region_name = 'Frontal'; % 'Occipital', 'Parietal', 'Frontal'
+brain_region_chosen = occipital_electrodes; % 'occipital_electrodes', 'parietal_electrodes', and 'frontal_electrodes'
+brain_region_name = 'Occipital'; % 'Occipital', 'Parietal', 'Frontal'
 
 % Decide which plots to make:
 plot_scale = 'dB'; % Choose: 'linear', 'dB'
