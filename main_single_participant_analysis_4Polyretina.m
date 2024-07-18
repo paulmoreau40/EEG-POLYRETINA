@@ -42,8 +42,8 @@ if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
-subject_inds = [1, 2, 3, 6, 7, 8];
-% subject_inds = 7;
+subject_inds = [1, 2, 3, 6, 7, 8, 9];
+% subject_inds = 9;
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
@@ -141,8 +141,8 @@ parietal_electrodes = {'LL6','LL7','LL8','RR6','RR7','RR8','RA3','RA4','LA3','LA
 occipital_electrodes = {'Z12', 'Z11','Z10','R11','L11','R12','L12'};
 
 % Which Electrodes to consider for Brain Regions of Interest:
-brain_region_chosen = occipital_electrodes; % 'occipital_electrodes', 'parietal_electrodes', and 'frontal_electrodes'
-brain_region_name = 'Occipital'; % 'Occipital', 'Parietal', 'Frontal'
+brain_region_chosen = parietal_electrodes; % 'occipital_electrodes', 'parietal_electrodes', and 'frontal_electrodes'
+brain_region_name = 'Parietal'; % 'Occipital', 'Parietal', 'Frontal'
 
 % Decide which plots to make:
 plot_scale = 'dB'; % Choose: 'linear', 'dB'
@@ -1015,7 +1015,7 @@ if plot_20v45 % plot_20v110 || plot_20v45 || plot_45v110
     myCmap = asymColorMapWhiteZero([-1,550], N_colors_standard);
     [data_heatmap_conditionvcondition_anova_reorganized_elec, new_electrode_labels] = organize_by_electrodes(data_heatmap_anova_conditionvscondition, {EEG_trial_data.(participants{end}).chanlocs(:).labels},oragnize_alphabetically_electrodes);
     heatmap_conditionvcondition_anova_reorganized_elec = heatmap(new_electrode_labels,y, data_heatmap_conditionvcondition_anova_reorganized_elec','Colormap', myCmap, 'ColorLimits', [-1,550], 'ColorbarVisible', 'on', 'XLabel',  'Electrodes', 'YLabel', 'Frequencies [Hz]');
-    heatmap_20vbase = heatmap(new_electrode_labels,y, data_heatmap_20vbase', 'Colormap', myCmap, 'ColorLimits', [-10,1], 'ColorbarVisible', 'on', 'XLabel', 'Electrodes', 'YLabel', 'Frequencies [Hz]');
+    %heatmap_20vbase = heatmap(new_electrode_labels,y, data_heatmap_20vbase', 'Colormap', myCmap, 'ColorLimits', [-10,1], 'ColorbarVisible', 'on', 'XLabel', 'Electrodes', 'YLabel', 'Frequencies [Hz]');
 
     
     heatmap_conditionvcondition_anova_reorganized_elec.Title = 'ANOVA Comparing FoV Conditions (20°, 45°)'; %, 110°

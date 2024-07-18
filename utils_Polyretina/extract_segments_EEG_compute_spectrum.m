@@ -143,18 +143,22 @@ for trial = 1:n_tot_trials
     % end
 end
 
-% COMPLETE FOV FOR BASELINES
 
-% if length(FoV) ~= 70
-%     error("Not 70 blocks")
-% end
 
-for i=1:length(FoV)
+
+
+len_fov = length(FoV);
+if ismember(participant_id,'P009')
+    len_fov = len_fov - 1;
+end
+    
+for i=1:len_fov
     EEG_baseline_data.metaInfo(current_line_baseline + i).FieldOfView = FoV(i);
 end
 
-% FoV = num2cell(FoV);
-% [EEG_baseline_data.metaInfo.FoV] = deal(FoV{:});
+
+
+
 
 
 % Saving frequencie and spectre for participant considered
