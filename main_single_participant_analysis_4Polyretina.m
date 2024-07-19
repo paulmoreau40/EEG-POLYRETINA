@@ -2559,6 +2559,22 @@ if plot_illustrative_conclusion_plots
     
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 %% 11. Comparing baseline-corrected signals
 
 plot_baselinecorrected = 1;
@@ -2573,23 +2589,34 @@ disp('Computing permutation statistics of Baseline-Corrected Conditions')
 % Converting initial spectrum into logarithmic scale
 spectrum_trial_20_dB = 10*log10(spectrum_trial_20);
 spectrum_trial_45_dB = 10*log10(spectrum_trial_45);
-spectrum_trial_110_dB = 10*log10(spectrum_trial_110);
+% spectrum_trial_110_dB = 10*log10(spectrum_trial_110);
+% 
+% % Creating relative spectra:
+% spectrum_trial_relative_20v110_dB = spectrum_trial_20_dB - spectrum_trial_110_dB;
+% spectrum_trial_relative_45v110_dB = spectrum_trial_45_dB - spectrum_trial_110_dB;
+% 
+% % Reconverting back into linear scale:
+% relative_spectrum_trial_20v110 = 10.^(spectrum_trial_relative_20v110_dB./10);
+% relative_spectrum_trial_45v110 = 10.^(spectrum_trial_relative_45v110_dB./10);
 
-% Creating relative spectra:
-spectrum_trial_relative_20v110_dB = spectrum_trial_20_dB - spectrum_trial_110_dB;
-spectrum_trial_relative_45v110_dB = spectrum_trial_45_dB - spectrum_trial_110_dB;
+% PAUL
+spectrum_trial_20_base_dB = 10*log10(spectrum_baseline_20);
+spectrum_trial_45_base_dB = 10*log10(spectrum_baseline_45);
 
-% Reconverting back into linear scale:
-relative_spectrum_trial_20v110 = 10.^(spectrum_trial_relative_20v110_dB./10);
-relative_spectrum_trial_45v110 = 10.^(spectrum_trial_relative_45v110_dB./10);
+spectrum_trial_relative_20vbase_dB = spectrum_trial_20_dB - spectrum_trial_20_base_dB;
+spectrum_trial_relative_45vbase_dB =  spectrum_trial_45_dB - spectrum_trial_45_base_dB;
+
 
 % 11.2. Defining Permutation Options
 spectra_conditions = struct();
 spectra_conditions.BaselineModel = '';
 spectra_conditions.Chans = {EEG_trial_data.(participants{end}).chanlocs(:).labels};
 spectra_conditions.Freqs = 1:83; % 1:40; Frequencies from 1 to 42 with a step of 0.5
-spectra_conditions.FoV20v110 = spectrum_trial_relative_20v110_dB;
-spectra_conditions.FoV45v110 = spectrum_trial_relative_45v110_dB;
+% spectra_conditions.FoV20v110 = spectrum_trial_relative_20v110_dB;
+% spectra_conditions.FoV45v110 = spectrum_trial_relative_45v110_dB;
+spectra_conditions.FoV20v110 = spectrum_trial_relative_20vbase_dB;
+spectra_conditions.FoV45v110 = spectrum_trial_relative_45vbase_dB;
+
 
 options = struct();
 options.fields = {'FoV20v110', 'FoV45v110'};
@@ -2613,7 +2640,8 @@ end
  
 % MAKING HEATMAP PLOTS
 % 11.4.1 Formating Data for Heatmaps
-data_heatmap_baselinecorrected = format_for_heatmap_baselinecorrected_dB(clustered_stats_table_baseline_corrected, statistical_clusters_baselinecorrected, spectrum_trial_relative_20v110_dB, spectrum_trial_relative_45v110_dB);
+%data_heatmap_baselinecorrected = format_for_heatmap_baselinecorrected_dB(clustered_stats_table_baseline_corrected, statistical_clusters_baselinecorrected, spectrum_trial_relative_20v110_dB, spectrum_trial_relative_45v110_dB);
+data_heatmap_baselinecorrected = format_for_heatmap_baselinecorrected_dB(clustered_stats_table_baseline_corrected, statistical_clusters_baselinecorrected, spectrum_trial_relative_20vbase_dB, spectrum_trial_relative_45vbase_dB);
 
 % 11.4.1.bis. Re-organize by electrode groupe
 oragnize_alphabetically_electrodes = 1;
@@ -2650,8 +2678,6 @@ if plot_baselinecorrected
     col = [50, 63, 77, 107];
     arrayfun(@(x)xline(ax,x,'k-','Alpha',0.3),[col-0.25]);
     arrayfun(@(x)yline(ax,x,'k-','Alpha',0.3),[row-0.25]);
-
-
 end
 
  
