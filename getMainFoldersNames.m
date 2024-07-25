@@ -1,5 +1,5 @@
 function [main, raw, elec, raw_EEGLAB, preproc, SS_ana, MS_ana, Figs, MetaFile, MetaTab, SR_path] =...
-    getMainFoldersNames_EEGAFF2(user)
+    getMainFoldersNames(user)
 % Define here the folders access so there is only one place to change
 % Input:
 %   user        - permits to specify the user for the main path (Alex or JB)
