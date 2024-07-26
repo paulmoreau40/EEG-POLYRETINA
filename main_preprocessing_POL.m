@@ -13,7 +13,7 @@ overwriteImport = false; % Boolean to force Mobilab step to happen anyway
 skipPrep = false; % Boolean to avoid preparation
 overwritePrep = false | overwriteImport; % Boolean to force the preparation to happen anyway
 skipPreproc = false; % Boolean to avoid preprocessing
-overwritePreproc = true | overwritePrep; % Boolean to force the preprocessing to happen anyway
+overwritePreproc = false | overwritePrep; % Boolean to force the preprocessing to happen anyway
 overwriteBadTempOnly = false | overwritePrep; % Boolean to force the bad epochs search to happen anyway
 skipICA = false; % Boolean to avoid the decomposition
 overwriteICA = false | overwriteBadTempOnly | overwritePreproc; % Boolean to force the decomposition to happen anyway
@@ -21,7 +21,7 @@ skipDipoles = false; % Boolean to avoid the dipole fitting
 overwriteDipoles = false | overwriteICA; % Boolean to force the dipole fitting to happen anyway
 skipAutoLabeling = false; % Boolean to avoid the automatic labeling
 overwriteAutoLabeling = false | overwriteICA | (overwriteDipoles & study_config.doDipoleFitting); % Boolean to force IClabel to run anyway
-overwriteManualLabeling = true | overwriteAutoLabeling; % Boolean to force reviewing of IC labels manually
+overwriteManualLabeling = false | overwriteAutoLabeling; % Boolean to force reviewing of IC labels manually
 %overwriteSecondTempRej = false | overwriteManualLabeling; % Boolean to force second temporal rejection
 for subject_ind = subject_inds
     if ~exist('ALLEEG','var')
@@ -32,7 +32,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 7;
+    subject_ind = 1;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);

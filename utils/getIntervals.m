@@ -8,10 +8,9 @@ intervals = [];
 inter_ind = 1;
 
 for tr = 1:length(validTrials)
-    blk = findInStructWithEmpties(events, 'BlockIndex', Trials.BlockInd(validTrials(tr)));
-    trl = findInStructWithEmpties(events, 'TrialIndex', Trials.TrialInd(validTrials(tr)));
-    
-    trial_evts = intersect(blk,trl);
+    % blk = findInStructWithEmpties(events, 'BlockIndex', Trials.BlockInd(validTrials(tr)));
+    % trl = findInStructWithEmpties(events, 'TrialIndex', Trials.TrialInd(validTrials(tr)));
+    % trial_evts = intersect(blk,trl);
     
     switch lower(intervalType)
         case 'fulltrial'
@@ -46,19 +45,19 @@ for tr = 1:length(validTrials)
             inter_ind = inter_ind+1;
             
         case 'intersections'
-            inter_reach_evts = intersect(find(strcmp({events(:).type},'StopMoving')),trial_evts);
-            inter_leave_evts = intersect(find(strcmp({events(:).type},'StartMoving')),trial_evts);
-            
-            % Check if there is the same number or start and stop events:
-            if length(inter_reach_evts) == length(inter_leave_evts)
-                for i = 1:length(inter_reach_evts)-1
-                    intervals(inter_ind,1) = EEG.times(round(events(inter_reach_evts(i)).latency))/1000;
-                    intervals(inter_ind,2) = EEG.times(round(events(inter_leave_evts(i+1)).latency))/1000;
-                    inter_ind = inter_ind+1;
-                end
-            else
-                warning('Unreliable import of intersections for trial %d', validTrials(tr))
-            end            
+            % inter_reach_evts = intersect(find(strcmp({events(:).type},'StopMoving')),trial_evts);
+            % inter_leave_evts = intersect(find(strcmp({events(:).type},'StartMoving')),trial_evts);
+            % 
+            % % Check if there is the same number or start and stop events:
+            % if length(inter_reach_evts) == length(inter_leave_evts)
+            %     for i = 1:length(inter_reach_evts)-1
+            %         intervals(inter_ind,1) = EEG.times(round(events(inter_reach_evts(i)).latency))/1000;
+            %         intervals(inter_ind,2) = EEG.times(round(events(inter_leave_evts(i+1)).latency))/1000;
+            %         inter_ind = inter_ind+1;
+            %     end
+            % else
+            %     warning('Unreliable import of intersections for trial %d', validTrials(tr))
+            % end            
     end
 end
 

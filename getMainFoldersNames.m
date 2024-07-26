@@ -24,6 +24,13 @@ switch lower(user)
         MetaFile = fullfile('F:\PM_Polyretina\Data\analysis\', 'Polyretina_meta.xlsx');
         MetaTab = 'SubjectsInfo';
         SR_path = '';
+
+    case 'paulcoarse'
+        main = 'F:\PM_Polyretina\Data\analysisCoarse\';
+        Figs = 'F:\PM_Polyretina\Data\figuresCoarse\';
+        MetaFile = fullfile('F:\PM_Polyretina\Data\analysisCoarse\', 'Polyretina_meta.xlsx');
+        MetaTab = 'SubjectsInfo';
+        SR_path = '';
     case 'paul_local'
         main = 'C:\Users\Paul Moreau\Documents\EEG_project\Data\analysis\';
         Figs = 'C:\Users\Paul Moreau\Documents\EEG_project\Data\figures\';

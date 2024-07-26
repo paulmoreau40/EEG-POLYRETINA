@@ -29,7 +29,11 @@ Angle20_perc = nan(n_Trials,1);
 Angle45_perc = nan(n_Trials,1);
 
 
-
+% COARSE BASELINE EXTRACTION
+BaseCoarse_idx = find(strcmp({evts_noBounds.type},'BaselineCoarseStart'));
+if BaseCoarse_idx ~= 2
+    error('Did not find 2 coarse baselines')
+end
 
 
 %% Loop over trials
