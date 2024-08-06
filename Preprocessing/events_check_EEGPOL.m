@@ -30,8 +30,9 @@ Angle45_perc = nan(n_Trials,1);
 
 
 % COARSE BASELINE EXTRACTION
+n_c_base = 4;
 BaseCoarse_idx = find(strcmp({evts_noBounds.type},'BaselineCoarseStart'));
-if BaseCoarse_idx ~= 2
+if length(BaseCoarse_idx) ~= n_c_base
     error('Did not find 2 coarse baselines')
 end
 
@@ -203,6 +204,63 @@ for tr = 1:n_Trials
         MaxBufferPost(tr) = (EEG.times(searchNextNaN(EEG, stop_ev, 'forward')) - EEG.times(limits(2)))/1000;
     end
 end
+
+
+
+% COARSE BASELINE
+coarse_urevent_seq = nan(n_c_base, 2);
+coarse_perc = nan(n_c_base, 1);
+coarseMaxBufferPre = nan(n_c_base, 1);
+coarseMaxBufferPost = nan(n_c_base, 1);
+
+for cb=1:length(BaseCoarse_idx)
+    
+    start_ev = BaseCoarse_idx(cb);
+    end_ev = start_ev + 1;
+
+    coarse_urevent_seq(cb, 1) = evts_noBounds(start_ev).urevent;
+    coarse_urevent_seq(cb, 2) = evts_noBounds(end_ev).urevent;
+    limits = [evts_noBounds(start_ev).latency, evts_noBounds(end_ev).latency];
+    
+    if isempty(limits) || limits(1) >= limits(2)
+        warning('Not enough latency information for coarse baseline %d', cb);
+        coarse_perc(cb) = 0;
+    else
+        coarse_perc(cb) = 100 - computeMissingEEGData(EEG, limits(1), limits(2));
+    end
+
+    if coarse_perc(cb) == 100
+        coarseMaxBufferPre(cb) = (EEG.times(limits(1)) - EEG.times(searchNextNaN(EEG, start_ev, 'backward'))) / 1000;
+        coarseMaxBufferPost(cb) = (EEG.times(searchNextNaN(EEG, end_ev, 'forward')) - EEG.times(limits(2))) / 1000;
+    end
+end
+
+% Combine coarse baseline data with existing trial data
+% BlockInd = [0; BlockInd; 0];
+% TrialInd = [0; TrialInd; 0];
+% TrialType = ['CoarseBaseline'; TrialType;'CoarseBaseline'];
+% Trial_urevent_seq = [coarse_urevent_seq(1, :); Trial_urevent_seq; coarse_urevent_seq(2, :)];
+% Trial_perc = [coarse_perc(1); Trial_perc; coarse_perc(2)];
+% Baseline_perc = [coarse_perc(1); Baseline_perc; coarse_perc(2)];
+% Angle20_perc = [nan; Angle20_perc; nan];
+% Angle45_perc = [nan; Angle45_perc; nan];
+% MaxBufferPre = [coarseMaxBufferPre(1); MaxBufferPre; coarseMaxBufferPre(2)];
+% MaxBufferPost = [coarseMaxBufferPost(1); MaxBufferPost; coarseMaxBufferPost(2)];
+BlockInd = [zeros(n_c_base/2, 1); BlockInd; zeros(n_c_base/2, 1)];
+TrialInd = [zeros(n_c_base/2, 1); TrialInd; zeros(n_c_base/2, 1)];
+TrialType = [repmat({'CoarseBaseline'}, n_c_base/2, 1); TrialType; repmat({'CoarseBaseline'}, n_c_base/2, 1)];
+Trial_urevent_seq = [coarse_urevent_seq(1:n_c_base/2, :); Trial_urevent_seq; coarse_urevent_seq(end-n_c_base/2+1:end, :)];
+Trial_perc = [coarse_perc(1:n_c_base/2); Trial_perc; coarse_perc(end-n_c_base/2+1:end)];
+Baseline_perc = [coarse_perc(1:n_c_base/2); Baseline_perc; coarse_perc(end-n_c_base/2+1:end)];
+Angle20_perc = [nan(n_c_base/2, 1); Angle20_perc; nan(n_c_base/2, 1)];
+Angle45_perc = [nan(n_c_base/2, 1); Angle45_perc; nan(n_c_base/2, 1)];
+MaxBufferPre = [coarseMaxBufferPre(1:n_c_base/2); MaxBufferPre; coarseMaxBufferPre(end-n_c_base/2+1:end)];
+MaxBufferPost = [coarseMaxBufferPost(1:n_c_base/2); MaxBufferPost; coarseMaxBufferPost(end-n_c_base/2+1:end)];
+
+
+
+
+
 
 EEGCompletenessSummary = table(BlockInd, TrialInd, TrialType, Trial_urevent_seq, Trial_perc, Baseline_perc, Angle20_perc, ...
     Angle45_perc, MaxBufferPre, MaxBufferPost);

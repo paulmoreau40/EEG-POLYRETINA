@@ -186,6 +186,36 @@ tbl.NewDurationComputed = [diff(tbl.Time); 0]; % just to visually verify
 
 
 
+% ADD THE EDGE COARSE BASELINE AFTER EACH BLACK COARSE BASELINE
+BaseCoarse_idx = find(strcmp(tbl.Name,'BaselineCoarseStart'));
+old_tbl = tbl;
+
+for i=length(BaseCoarse_idx):-1:1
+    edgeStart  = old_tbl(BaseCoarse_idx(i)+1,:);
+    edgeStart.Time = edgeStart.Time + 0.01;
+    edgeStart.RawName = {'Start c_baseline'};
+    edgeStart.Name = {'BaselineCoarseStart'};
+    edgeStart.TrialType = {['Baseline']};
+    edgeStart.Latency = edgeStart.Latency + 1;
+    
+    edgeEnd = old_tbl(BaseCoarse_idx(i)+2,:);
+    edgeEnd.Time = edgeEnd.Time - 0.01;
+    edgeEnd.RawName = {'End c_baseline'};
+    edgeEnd.Name = {'BaselineCoarseEnd'};
+    edgeEnd.TrialType = {['Baseline']};
+    edgeEnd.Latency = edgeEnd.Latency - 1;
+    edgeEnd.BlockIndex = 0;
+    edgeEnd.TrialIndex = 0;
+
+    tbl = [tbl(1:BaseCoarse_idx(i)+1, :); edgeStart ; edgeEnd; tbl(BaseCoarse_idx(i)+2:end, :)];
+end
+
+
+
+
+
+
+
 % BIG CHECK UP TO VERIFY
 % - 1 baseline per block
 % - 2 trials of the same type per block (Angle45 or Angle20)

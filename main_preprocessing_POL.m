@@ -11,7 +11,7 @@ configEEGPOL;
 skipImport = false; % Boolean to avoid running Mobilab step
 overwriteImport = false; % Boolean to force Mobilab step to happen anyway
 skipPrep = false; % Boolean to avoid preparation
-overwritePrep = false | overwriteImport; % Boolean to force the preparation to happen anyway
+overwritePrep = true | overwriteImport; % Boolean to force the preparation to happen anyway
 skipPreproc = false; % Boolean to avoid preprocessing
 overwritePreproc = false | overwritePrep; % Boolean to force the preprocessing to happen anyway
 overwriteBadTempOnly = false | overwritePrep; % Boolean to force the bad epochs search to happen anyway
