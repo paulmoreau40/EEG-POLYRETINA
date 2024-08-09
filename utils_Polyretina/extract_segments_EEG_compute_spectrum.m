@@ -12,8 +12,6 @@ function [EEG_trial_data, EEG_baseline_data] = extract_segments_EEG_compute_spec
 % EEG_trial_data            = Struct with EEG segments and their respective
 %                             time trials and metadata
 
-%make_plot = 1;
-
 % TRIALS
 begin_segment_trial = {'TrialStart'};
 end_segment_trial = {'TrialEnd'};
@@ -25,30 +23,42 @@ begin_segment_baseline = {'BaselineStart'};
 end_segment_baseline = {'BaselineEnd'};
 current_line_baseline = size({EEG_baseline_data.metaInfo.TrialIndex},2);
 spectrumBaseline = [];
-
+events = EEG.event;
 
 if ismember(participant_id,'P001') % dont know why but Coarse baseline present
-    EEG.event(end) = [];
-    EEG.event(253).latency = 410800; % instead of 411461 to have more baseline than just 125
+    events(end) = [];
+    events(257).latency = events(257-1).latency; % instead of 411461 to have more baseline than just 125
 end
 
 if ismember(participant_id,'P008')
-    EEG.event(347).latency = 582817;
-    EEG.event(370).latency = 620000;
+    events(347).latency = 582817;
+    events(370).latency = 620000;
 end
-
 
 if ismember(participant_id,'P007')
-    EEG.event(43).latency = 72833; % baseline -> 859 samples (instead of 76)
+    events(43).latency = 72833; % baseline -> 859 samples (instead of 76)
 end
 
 
 
-n_tot_trials = EEG.event(end).BlockIndex * EEG.event(end).TrialIndex;
-blockLength = 3;
-n_blocks = 70;
-i_trial = 1;
+% FIND LAST NON-ZERO VALUE OF BLOCK AND INDEX TO COMPUTE N TOT TRIALS
+lastBlock = []; lastIndex = [];
+for i = length(events):-1:1
+    if events(i).BlockIndex ~= 0
+        lastBlock = events(i).BlockIndex;
+        break;
+    end
+end
+for i = length(events):-1:1
+    if events(i).TrialIndex ~= 0
+        lastIndex = events(i).TrialIndex;
+        break;
+    end
+end
+n_tot_trials = lastBlock * lastIndex;
 
+blockLength = 3;
+i_trial = 1;
 FoV = [];
 
 for trial = 1:n_tot_trials
@@ -59,22 +69,22 @@ for trial = 1:n_tot_trials
  
     bl = ceil(trial/blockLength);
     tr_inBl = trial - (bl-1)*blockLength;
-    trial_idx = find([EEG.event.BlockIndex] == bl & [EEG.event.TrialIndex] == tr_inBl);
+    trial_idx = find([events.BlockIndex] == bl & [events.TrialIndex] == tr_inBl);
     
     if length(trial_idx) ~= 2
         error('This trial has ' + trial_idx + " events")
-    elseif ismember(EEG.event(trial_idx(end)).TrialType, "Baseline")
+    elseif ismember(events(trial_idx(end)).TrialType, "Baseline")
         isBaseline = 1;
     else
         % save the angle value to update later the baselines angles
-        FoV(bl) = str2double(regexp(EEG.event(trial_idx(end)).TrialType, '\d+', 'match'));
+        FoV(bl) = str2double(regexp(events(trial_idx(end)).TrialType, '\d+', 'match'));
     end
 
     % Find start and end idx (Trial / Baseline Start/End) for this trial
     for i = 1:length(trial_idx)
-        if ismember(EEG.event(trial_idx(i)).type, [begin_segment_trial, begin_segment_baseline])
+        if ismember(events(trial_idx(i)).type, [begin_segment_trial, begin_segment_baseline])
             start_idx = trial_idx(i);
-        elseif ismember(EEG.event(trial_idx(i)).type, [end_segment_trial, end_segment_baseline])
+        elseif ismember(events(trial_idx(i)).type, [end_segment_trial, end_segment_baseline])
             end_idx = trial_idx(i);
         else
             error("Didn't find any start or end event for this trial")
@@ -85,7 +95,7 @@ for trial = 1:n_tot_trials
         error("The start or end trial has not been updated/found")
     end
 
-    data = EEG.data(:,round(EEG.event(start_idx).latency):round(EEG.event(end_idx).latency));
+    data = EEG.data(:,round(events(start_idx).latency):round(events(end_idx).latency));
     
     if size(data,2) < 500
         warning('data too small for the power spectrum computation ? (< 500)')
@@ -159,7 +169,7 @@ end
 
 
 
-
+EEG.event = events;
 
 % Saving frequencie and spectre for participant considered
 EEG_trial_data.(participant_id).srate = EEG.srate;
