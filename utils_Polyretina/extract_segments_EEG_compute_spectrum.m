@@ -30,14 +30,14 @@ if ismember(participant_id,'P001') % dont know why but Coarse baseline present
     events(257).latency = events(257-1).latency; % instead of 411461 to have more baseline than just 125
 end
 
-if ismember(participant_id,'P008')
-    events(347).latency = 582817;
-    events(370).latency = 620000;
-end
-
-if ismember(participant_id,'P007')
-    events(43).latency = 72833; % baseline -> 859 samples (instead of 76)
-end
+% if ismember(participant_id,'P008')
+%     events(347).latency = 582817;
+%     events(370).latency = 620000;
+% end
+% 
+% if ismember(participant_id,'P007')
+%     events(43).latency = 72833; % baseline -> 859 samples (instead of 76)
+% end
 
 
 

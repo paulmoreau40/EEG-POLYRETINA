@@ -56,14 +56,14 @@ iTrial = 1;
 % handle subject P006 missing lot of events at beginning
 subject = cfg.subjects(cfg.current_subject).id;
 
-if strcmp(subject, 'P005')
-    trialType = {"Angle20"};
-end
-
-% TEST TO ONLY KEEP ESSAI 1 of P009, bug après ?
-if strcmp(subject, 'P009')
-    events_count = 291;
-end
+% if strcmp(subject, 'P005')
+%     trialType = {"Angle20"};
+% end
+% 
+% % TEST TO ONLY KEEP ESSAI 1 of P009, bug après ?
+% if strcmp(subject, 'P009')
+%     events_count = 291;
+% end
 
 
 
@@ -156,9 +156,9 @@ tbl.DurationComputed = [diff(tbl.Time); 0];
 
 
 
-if strcmp(subject, 'P009')
-    tbl(349:end,:) = [];
-end
+% if strcmp(subject, 'P009')
+%     tbl(349:end,:) = [];
+% end
 
 
 
