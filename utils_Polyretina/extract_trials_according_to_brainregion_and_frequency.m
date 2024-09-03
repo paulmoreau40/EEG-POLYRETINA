@@ -26,17 +26,16 @@ kept_field_of_view = [];
 % kept_auditory_answer = [];
 
 % Getting overall number of trials to compute:
-total_num_trials = size({EEG_relative_spectrum.metaInfo.TrialIndex},2);
+total_num_trials = size({EEG_relative_spectrum.metaInfo.participant_id},2);
 %total_num_trials = EEG_relative_spectrum.metaInfo(end).BlockIndex * 2;
 
 % Defining variables to know if we moved onto another participant
 previous_participant = EEG_relative_spectrum.metaInfo(1).participant_id;
 count_trial = 1;
 count_trial_bis = 1;
-
 count_meta = 1;
 
-if bool_divide_by_FoV
+if bool_divide_by_FoV %  TRIALS AND BASELINE
     disp(['Keeping only trials of interst for FoV: ' num2str(wanted_FoV) '...'])
     % 2. Loop over all the trials to keep only with field of view of interest
     for trial = 1:total_num_trials
@@ -52,17 +51,7 @@ if bool_divide_by_FoV
         current_FoV = EEG_relative_spectrum.metaInfo(trial).FieldOfView;
         if current_FoV == wanted_FoV
 
-            % Get trial_id
             trial_id = EEG_relative_spectrum.metaInfo(trial).TrialIndex;
-            % auditory_cue = EEG_relative_spectrum.metaInfo(trial).auditory_cue;
-            % auditory_answer = EEG_relative_spectrum.metaInfo(trial).auditory_answer;
-
-            % Save metaInfo that is kept in new structure
-            % kept_participant_id = [kept_participant_id; current_participant];
-            % kept_trial_id = [kept_trial_id; trial_id];
-            % kept_field_of_view = [kept_field_of_view; current_FoV];
-            % kept_auditory_cue = [kept_auditory_cue; auditory_cue];
-            % kept_auditory_answer = [kept_auditory_answer; auditory_answer];
 
             % Saving spectrum and related information for that
             % participant/trial
@@ -73,17 +62,16 @@ if bool_divide_by_FoV
             switch absolute_or_relative
                 case 'absolute'
                     EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).spectrum(:,:,count_trial_bis); % POL : before, trial_idx
-                case 'relative'
-                    EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).relative_spectrum(:,:,count_trial_bis); % POL : before, trial_idx
-                otherwise
-                    error('Type of spectra computed incorrect: type either "absolute" or "relative"');
+                % case 'relative'
+                %     EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).relative_spectrum(:,:,count_trial_bis); % POL : before, trial_idx
+                % otherwise
+                %     error('Type of spectra computed incorrect: type either "absolute" or "relative"');
             end
 
             EEG_selected_spectrum_FoV.metaInfo(count_meta).participant_id = current_participant;
             EEG_selected_spectrum_FoV.metaInfo(count_meta).TrialIndex = trial_id;
             EEG_selected_spectrum_FoV.metaInfo(count_meta).FieldOfView = current_FoV;
             
-
             % Updating counting variables
             count_trial = count_trial + 1;
             count_meta = count_meta + 1;
@@ -92,59 +80,105 @@ if bool_divide_by_FoV
         count_trial_bis = count_trial_bis + 1;
     end
     
-else
-    error("case not modified for polyretina ?")
-    disp('Consider all the Fields of View:...')
-    % 2. Loop over all the trials
+else % COARSE BASELINE
+
+    disp(['Keeping only trials of interest for: ' num2str(wanted_FoV) ' coarse baseline' ])
+    % 2. Loop over all the trials to keep only with field of view of interest
     for trial = 1:total_num_trials
 
         % Seeing if we moved onto next participant
         current_participant = EEG_relative_spectrum.metaInfo(trial).participant_id;
         if ~strcmp(current_participant, previous_participant)
             count_trial = 1;
+            count_trial_bis=1;
         end
 
-        % Retrieving current FoV
-        current_FoV = EEG_relative_spectrum.metaInfo(trial).FieldOfView;
+        % Check if the field of view is the one wanted
+        coarse_type = EEG_relative_spectrum.metaInfo(trial).type;
+        if coarse_type == wanted_FoV % black or edge
 
-        % Get trial_id
-        trial_id = EEG_relative_spectrum.metaInfo(trial).TrialIndex;
-        % auditory_cue = EEG_relative_spectrum.metaInfo(trial).auditory_cue;
-        % auditory_answer = EEG_relative_spectrum.metaInfo(trial).auditory_answer;
+            trial_id = EEG_relative_spectrum.metaInfo(trial).idx;
 
-        % Save metaInfo that is kept in new structure
-        kept_participant_id = [kept_participant_id; current_participant];
-        kept_trial_id = [kept_trial_id; trial_id];
-        kept_field_of_view = [kept_field_of_view; current_FoV];
-        % kept_auditory_cue = [kept_auditory_cue; auditory_cue];
-        % kept_auditory_answer = [kept_auditory_answer; auditory_answer];
+            % Saving spectrum and related information for that
+            % participant/trial
+            EEG_selected_spectrum_FoV.(current_participant).srate = EEG_relative_spectrum.(current_participant).srate;
+            EEG_selected_spectrum_FoV.(current_participant).chanlocs = EEG_relative_spectrum.(current_participant).chanlocs;
+            EEG_selected_spectrum_FoV.(current_participant).freqs = EEG_relative_spectrum.(current_participant).freqs;
 
-        % Saving spectrum and related information for that
-        % participant/trial
-        EEG_selected_spectrum_FoV.(current_participant).srate = EEG_relative_spectrum.(current_participant).srate;
-        EEG_selected_spectrum_FoV.(current_participant).chanlocs = EEG_relative_spectrum.(current_participant).chanlocs;
-        EEG_selected_spectrum_FoV.(current_participant).freqs = EEG_relative_spectrum.(current_participant).freqs;
+            switch absolute_or_relative
+                case 'absolute'
+                    EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).spectrum(:,:,count_trial_bis); % POL : before, trial_idx
+                % case 'relative'
+                %     EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).relative_spectrum(:,:,count_trial_bis); % POL : before, trial_idx
+                % otherwise
+                %     error('Type of spectra computed incorrect: type either "absolute" or "relative"');
+            end
 
-        switch absolute_or_relative
-            case 'absolute'
-                EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).spectrum(:,:,trial); % POL : before, trial_idx
-            case 'relative'
-                EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).relative_spectrum(:,:,trial); % POL : before, trial_idx
-            otherwise
-                error('Type of spectra computed incorrect: type either "absolute" or "relative"');
+            EEG_selected_spectrum_FoV.metaInfo(count_meta).participant_id = current_participant;
+            EEG_selected_spectrum_FoV.metaInfo(count_meta).TrialIndex = trial_id;
+            EEG_selected_spectrum_FoV.metaInfo(count_meta).type = coarse_type;
+            
+            % Updating counting variables
+            count_trial = count_trial + 1;
+            count_meta = count_meta + 1;
+            previous_participant = current_participant;
         end
-
-
-        EEG_selected_spectrum_FoV.metaInfo(count_trial).participant_id = current_participant;
-        EEG_selected_spectrum_FoV.metaInfo(count_trial).TrialIndex = trial_id;
-        EEG_selected_spectrum_FoV.metaInfo(count_trial).FieldOfView = current_FoV;
-        
-        % Updating counting variables
-        count_trial = count_trial + 1;
-        previous_participant = current_participant;
-
+        count_trial_bis = count_trial_bis + 1;
     end
+
+    % for trial = 1:total_num_trials
+    % 
+    %     % Seeing if we moved onto next participant
+    %     current_participant = EEG_relative_spectrum.metaInfo(trial).participant_id;
+    %     if ~strcmp(current_participant, previous_participant)
+    %         count_trial = 1;
+    %     end
+    % 
+    %     trial_id = EEG_relative_spectrum.metaInfo(trial).TrialIndex;
+    %     % auditory_cue = EEG_relative_spectrum.metaInfo(trial).auditory_cue;
+    %     % auditory_answer = EEG_relative_spectrum.metaInfo(trial).auditory_answer;
+    %     % Save metaInfo that is kept in new structure
+    %     % kept_participant_id = [kept_participant_id; current_participant];
+    %     % kept_trial_id = [kept_trial_id; trial_id];
+    %     % kept_field_of_view = [kept_field_of_view; current_FoV];
+    %     % kept_auditory_cue = [kept_auditory_cue; auditory_cue];
+    %     % kept_auditory_answer = [kept_auditory_answer; auditory_answer];
+    % 
+    %     % Saving spectrum and related information for that
+    %     % participant/trial
+    %     EEG_selected_spectrum_FoV.(current_participant).srate = EEG_relative_spectrum.(current_participant).srate;
+    %     EEG_selected_spectrum_FoV.(current_participant).chanlocs = EEG_relative_spectrum.(current_participant).chanlocs;
+    %     EEG_selected_spectrum_FoV.(current_participant).freqs = EEG_relative_spectrum.(current_participant).freqs;
+    % 
+    %     switch absolute_or_relative
+    %         case 'absolute'
+    %             EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).spectrum(:,:,trial); % POL : before, trial_idx
+    %         % case 'relative'
+    %         %     EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).relative_spectrum(:,:,trial); % POL : before, trial_idx
+    %         % otherwise
+    %         %     error('Type of spectra computed incorrect: type either "absolute" or "relative"');
+    %     end
+    % 
+    % 
+    %     EEG_selected_spectrum_FoV.metaInfo(count_trial).participant_id = current_participant;
+    %     EEG_selected_spectrum_FoV.metaInfo(count_trial).TrialIndex = trial_id;
+    %     EEG_selected_spectrum_FoV.metaInfo(count_trial).FieldOfView = current_FoV;
+    % 
+    %     % Updating counting variables
+    %     count_trial = count_trial + 1;
+    %     previous_participant = current_participant;
+    % 
+    % end
 end
+
+
+
+
+
+
+
+
+
 
 % Saving all of the metadata information in the structure
 % EEG_selected_spectrum_FoV.metaInfo = struct('participant_id', kept_participant_id,...
@@ -155,7 +189,7 @@ disp('... finished')
 % Get participants which are kept:
 participants = unique({EEG_relative_spectrum.metaInfo(:).participant_id});
 
-% 3. Keep only frequencies of interset:
+% 3. Keep only frequencies of interest:
 if ischar(range_freqs_of_interest)
     if strcmp(range_freqs_of_interest, 'all')
         disp('Keeping all of the frequencies...')

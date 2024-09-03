@@ -21,7 +21,7 @@ skipDipoles = false; % Boolean to avoid the dipole fitting
 overwriteDipoles = false | overwriteICA; % Boolean to force the dipole fitting to happen anyway
 skipAutoLabeling = false; % Boolean to avoid the automatic labeling
 overwriteAutoLabeling = false | overwriteICA | (overwriteDipoles & study_config.doDipoleFitting); % Boolean to force IClabel to run anyway
-overwriteManualLabeling = false | overwriteAutoLabeling; % Boolean to force reviewing of IC labels manually
+overwriteManualLabeling = true | overwriteAutoLabeling; % Boolean to force reviewing of IC labels manually
 %overwriteSecondTempRej = false | overwriteManualLabeling; % Boolean to force second temporal rejection
 for subject_ind = subject_inds
     if ~exist('ALLEEG','var')
@@ -32,7 +32,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 6;
+    subject_ind = 8;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);
@@ -301,7 +301,6 @@ for subject_ind = subject_inds
     if (~exist([N.searchFolder_2arch_rej_ICcats N.postLabelingFile],'file') || overwriteManualLabeling)
         %% Manual ICs selection
         %keptComponents_repaired % calls the script edited manually
-        %keptComponents1
         keptComponents_POL
 
         switch study_config.badSampsRejection

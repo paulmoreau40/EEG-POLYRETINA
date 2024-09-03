@@ -1,4 +1,4 @@
-function [EEG_baseline_data] = computing_singleBaseline(EEG_baseline_data)
+function [EEG_baseline_data] = computing_singleBaseline(EEG_baseline_data, EEG_coarse_data)
 
 % Getting overall number of trials to compute:
 total_num_trials = size({EEG_baseline_data.metaInfo.trial_id},2);
@@ -13,7 +13,7 @@ for trial = 1:total_num_trials
     current_trial = EEG_baseline_data.metaInfo(trial).trial_id; 
     
     % Save spectrum in overall matrix
-    EEG_spectrum = EEG_baseline_data.(['P' participant_id]).spectrum(:,:,current_trial);
+    EEG_spectrum = EEG_baseline_data.(participant_id).spectrum(:,:,current_trial);
     
 end
 
@@ -29,7 +29,7 @@ for trial = 1:total_num_trials
     current_trial = EEG_baseline_data.metaInfo(trial).trial_id; 
 
     % Set to averaged baseline
-    EEG_baseline_data.(['P' participant_id]).spectrum(:,:,current_trial) = mean_EEG_spectrum;
+    EEG_baseline_data.(participant_id).spectrum(:,:,current_trial) = mean_EEG_spectrum;
     
 end
 

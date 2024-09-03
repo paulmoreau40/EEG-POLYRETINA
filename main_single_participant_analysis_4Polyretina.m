@@ -18,18 +18,17 @@ addpath('F:\PM_Polyretina\EEG_project\eeglab2024.0\');
 overwriteSpectraComputations = false;
 
 %% Considering a single participant:
-%subjects = [2]; % {study_config.subjects(subject_inds).id}; % Replace this when looping over all participants
-%n_sbjs = length(subjects);
 
 % Output path:
-output_filepath = 'F:\PM_Polyretina\Data\analysis\3_single-subject-analysis\bemobil\autoMoBI';
+output_filepath = 'F:\PM_Polyretina\Data\analysisCoarse\3_single-subject-analysis\bemobil\autoMoBI';
 
 if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
 %subject_inds = [1, 2, 3, 6, 7, 8, 9];
-subject_inds = 6;
+%subject_inds = 1;
+subject_inds = [1, 2, 3, 6];
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
@@ -43,10 +42,7 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
         subject = study_config.subjects(subject_ind).id;
         disp(['Subject ' subject]);
         study_config.current_subject = subject_ind;
-        
         N = makeFolderFileNames(study_config, subject);
-
-        % Loading EEG dataset of interest
         EEG = pop_loadset('filename', N.postLabelingFile, 'filepath', N.searchFolder_2arch_rej_ICcats);
                 
         %% 2. Filter the dataset with the desired upper and lower frequencies
@@ -63,10 +59,6 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
         boundaryEvents_mask = strcmp({EEG.event.type}, 'boundary');
         EEG2 = pop_editeventvals(EEG, 'delete', find(boundaryEvents_mask));
 
-        % % 3.2. Remove Button Press doublons from events structure
-        % EEG_no_doublons = fix_doublons_button_press(EEG2);
-        % EEG_no_doublons = eeg_checkset(EEG_no_doublons);
-
 
         %% 4. Retrieving Segments of Interest and Corresponding Baselines, and computing their Spectra
 
@@ -74,26 +66,24 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
         if ~exist('EEG_trial_data','var')
             disp('Creating EEG_trial_data structure...')
             EEG_trial_data = [];
-            % Defining metaInfo structure:
-            % num_trials = EEG2.event(end).trial_id;
-            % EEG_trial_data.metaInfo = struct('participant_id', [],...
-            %     'trial_id', [], 'field_of_view', [], 'auditory_cue', [], 'auditory_answer', []);
-            num_trials = EEG2.event(end).TrialIndex;
             EEG_trial_data.metaInfo = struct('participant_id', [],'BlockIndex', [],...
                 'TrialIndex', [], 'FieldOfView', []);
         end
         if ~exist('EEG_baseline_data','var')
             disp('Creating EEG_baseline_data structure...')
             EEG_baseline_data = [];
-            % Defining metaInfo structure:
-            num_trials = EEG2.event(end).TrialIndex;
             EEG_baseline_data.metaInfo = struct('participant_id', [],'BlockIndex', [],...
                 'TrialIndex', [], 'FieldOfView', []);
         end
 
+        if ~exist('EEG_coarse_data','var')
+            disp('Creating EEG_coarse_data structure...')
+            EEG_coarse_data = [];
+            EEG_coarse_data.metaInfo = struct('participant_id', [],'type', [], 'idx', []);
+        end
+
         % 4.1. Power spectrum for trials and baselines
-        %EEG_trial_data = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data,'detection_time',num2str(subjects(s)), false);
-        [EEG_trial_data, EEG_baseline_data] = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data,EEG_baseline_data,subject, false);
+        [EEG_trial_data, EEG_baseline_data, EEG_coarse_data] = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data, EEG_baseline_data, EEG_coarse_data, subject, false);
 
         % 4.2. Retrieving Baseline: One Baseline per trial        
         %EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG2, EEG_baseline_data, 'black_baseline',num2str(subjects(s)), false);
@@ -102,16 +92,25 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
     % % Removing initial shift which is created when concatenating metaInfo
     EEG_trial_data.metaInfo(1) = [];
     EEG_baseline_data.metaInfo(1) = [];
+    EEG_coarse_data.metaInfo(1) = [];
 
-    disp('Saving spectra of trial and baseline data...')
+    disp('Saving spectra of trial, baseline and coarse data...')
     save(fullfile(output_filepath, 'EEG_trial_data.mat'),'-struct','EEG_trial_data');
     save(fullfile(output_filepath, 'EEG_baseline_data.mat'),'-struct','EEG_baseline_data');
+    save(fullfile(output_filepath, 'EEG_coarse_data.mat'),'-struct','EEG_coarse_data');
     disp('Finished saving...');
 else
     EEG_trial_data = load(fullfile(output_filepath, 'EEG_trial_data.mat'), '-mat');
     EEG_baseline_data = load(fullfile(output_filepath, 'EEG_baseline_data.mat'), '-mat');
-    disp('Finished loading EEG_trial_data and EEG_baseline_data structures');
+    EEG_coarse_data = load(fullfile(output_filepath, 'EEG_coarse_data.mat'), '-mat');
+    disp('Finished loading EEG_trial_data EEG_baseline_data and EEG_coarse_data structures');
 end
+
+
+
+
+
+
 
 %% CHOOSING GLOBAL PARAMETERS FOR WHAT FOLLOWS:
 
@@ -134,32 +133,25 @@ brain_region_name = 'Frontal'; % 'Occipital', 'Parietal', 'Frontal'
 plot_scale = 'dB'; % Choose: 'linear', 'dB'
 plot_absolute_spectrum = true;
 plot_absolute_baseline_spectrum = true;
-plot_relative_spectrum = true;
 plot_std = true;
 
 %% 5. Define which baseline will be considered
 
-% Choosing which type of baseline to do (per FoV, one averaged baseline for
-% everything or one baseline per trial)
-if strcmp(choice_of_baseline, 'black')
-    disp('Considering black intertrial intervals as baseline')
-    if strcmp(choice_of_black_baseline,'one_per_trial')
-        disp('Considering one baseline per trial');
-        bool_divide_by_FoV = 1;
-    % elseif strcmp(choice_of_black_baseline, 'one_per_FoV')
-    %     disp('Considering one baseline per field of view')
-    %     EEG_baseline_data_perFoV = computing_oneBaseline_per_FoV(EEG_baseline_data);
-    %     bool_divide_by_FoV = 1;
-    % elseif strcmp(choice_of_black_baseline, 'one_for_all')
-    %     disp('Considering one baseline for everything')
-    %     EEG_baseline_data_single = computing_singleBaseline(EEG_baseline_data);
-    %     bool_divide_by_FoV = 1;
-    end
-% elseif strcmp(choice_of_baseline, '110°')
-%     disp('Considering 110° trials as baseline')
-%     EEG_baseline_data = computing_110Baseline(EEG_baseline_data);
-%     bool_divide_by_FoV = 0;
-end
+bool_divide_by_FoV = 1;
+%EEG_black_baseline_data = computing_singleBaseline(EEG_baseline_data, EEG_coarse_data);
+
+% if strcmp(choice_of_baseline, 'black')
+%     disp('Considering black intertrial intervals as baseline')
+%     if strcmp(choice_of_black_baseline,'one_per_trial')
+%         disp('Considering one baseline per trial');
+%         bool_divide_by_FoV = 1;
+% 
+%     elseif strcmp(choice_of_black_baseline, 'one_for_all')
+%         disp('Considering one baseline for everything')
+%         EEG_baseline_data_single = computing_singleBaseline(EEG_baseline_data);
+%         bool_divide_by_FoV = 1;
+%     end
+% end
 
 
 %% 6. Distinguish FoV Conditions, and eventually Brain RoI and frequencies of interest
@@ -174,120 +166,112 @@ end
 % Removing frequencies which are filtered out
 EEG_trial_data = drop_useless_frequencies(EEG_trial_data,lowcutoff, highcutoff, 'absolute');
 EEG_baseline_data = drop_useless_frequencies(EEG_baseline_data,lowcutoff,highcutoff, 'absolute');
+EEG_coarse_data = drop_useless_frequencies(EEG_coarse_data,lowcutoff,highcutoff, 'absolute');
 
-% 6.1. Selecting Electrodes of Interest and Brain Regions of Interest
-% according to FoV
-% Defining the frequencies that we want to keep (here all for plotting purposes)
-range_freqs_of_interest = 'all';
 
-% 6.2. Choosing electrode of interest and baseline method and extracting data accordingly to make plots
-% Retrieving absolute spectra for region of interest
-[EEG_selected_absolute_spectrum_20] = extract_trials_according_to_brainregion_and_frequency(EEG_trial_data, brain_region_chosen, range_freqs_of_interest, 1, 20, 'absolute');
-[EEG_selected_absolute_spectrum_45] = extract_trials_according_to_brainregion_and_frequency(EEG_trial_data, brain_region_chosen, range_freqs_of_interest, 1, 45, 'absolute');
-
-% Retrieving absolute BASELINE for region of interest
-if strcmp(choice_of_baseline, 'black')
-    [EEG_selected_absolute_base_spectrum_20] = extract_trials_according_to_brainregion_and_frequency(EEG_baseline_data, brain_region_chosen, range_freqs_of_interest, bool_divide_by_FoV, 20, 'absolute');
-    [EEG_selected_absolute_base_spectrum_45] = extract_trials_according_to_brainregion_and_frequency(EEG_baseline_data, brain_region_chosen, range_freqs_of_interest, bool_divide_by_FoV, 45, 'absolute');
-end
+% 6.2. Extract region of interest for each FoV (TRIALS / BASELINE)
+[EEG_selected_absolute_spectrum_20] = extract_trials_according_to_brainregion_and_frequency(EEG_trial_data, brain_region_chosen, 'all', 1, 20, 'absolute');
+[EEG_selected_absolute_spectrum_45] = extract_trials_according_to_brainregion_and_frequency(EEG_trial_data, brain_region_chosen, 'all', 1, 45, 'absolute');
+[EEG_selected_absolute_base_spectrum_20] = extract_trials_according_to_brainregion_and_frequency(EEG_baseline_data, brain_region_chosen, 'all', 1, 20, 'absolute');
+[EEG_selected_absolute_base_spectrum_45] = extract_trials_according_to_brainregion_and_frequency(EEG_baseline_data, brain_region_chosen, 'all', 1, 45, 'absolute');
+[EEG_selected_absolute_coarse_spectrum_black] = extract_trials_according_to_brainregion_and_frequency(EEG_coarse_data, brain_region_chosen, 'all', 0, "black", 'absolute');
+[EEG_selected_absolute_coarse_spectrum_edge] = extract_trials_according_to_brainregion_and_frequency(EEG_coarse_data, brain_region_chosen, 'all', 0, "edge", 'absolute');
 
 % 6.3. Concatenating all of the data across the trials to format them for the plots:
-% For absolute trial data
-[EEG_selected_absolute_spectrum_20_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_spectrum_20);
+[EEG_selected_absolute_spectrum_20_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_spectrum_20); % TRIALS
 [EEG_selected_absolute_spectrum_45_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_spectrum_45);
+[EEG_selected_absolute_base_spectrum_20_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_base_spectrum_20); % BASELINE
+[EEG_selected_absolute_base_spectrum_45_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_base_spectrum_45);
+[EEG_selected_absolute_coarse_spectrum_black_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_coarse_spectrum_black); % COARSE
+[EEG_selected_absolute_coarse_spectrum_edge_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_coarse_spectrum_edge);
 
-% For absolute baseline data
-if strcmp(choice_of_baseline, 'black')
-    [EEG_selected_absolute_base_spectrum_20_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_base_spectrum_20);
-    [EEG_selected_absolute_base_spectrum_45_all_trials] = format_for_plotting_spectra(EEG_selected_absolute_base_spectrum_45);
-end
-
-% 6.4. Averating across electrodes to get brain regions of interest:  (averaging over selected electrodes)
-% For Absolute data
-EEG_absolute_spectrum_20_all_trials_averaged = mean(EEG_selected_absolute_spectrum_20_all_trials.spectrum,1);
+% 6.4. Averating across electrodes to get brain regions of interest:
+EEG_absolute_spectrum_20_all_trials_averaged = mean(EEG_selected_absolute_spectrum_20_all_trials.spectrum,1); % TRIALS
 EEG_absolute_spectrum_45_all_trials_averaged = mean(EEG_selected_absolute_spectrum_45_all_trials.spectrum,1);
-
-% For Absolute Baseline Data
-if strcmp(choice_of_baseline, 'black')
-    EEG_absolute_base_spectrum_20_all_trials_averaged = mean(EEG_selected_absolute_base_spectrum_20_all_trials.spectrum,1);
-    EEG_absolute_base_spectrum_45_all_trials_averaged = mean(EEG_selected_absolute_base_spectrum_45_all_trials.spectrum,1);
-end
+EEG_absolute_base_spectrum_20_all_trials_averaged = mean(EEG_selected_absolute_base_spectrum_20_all_trials.spectrum,1); % BASELINE
+EEG_absolute_base_spectrum_45_all_trials_averaged = mean(EEG_selected_absolute_base_spectrum_45_all_trials.spectrum,1);
+EEG_absolute_coarse_spectrum_black_all_trials_averaged = mean(EEG_selected_absolute_coarse_spectrum_black_all_trials.spectrum,1); % COARSE
+EEG_absolute_coarse_spectrum_edge_all_trials_averaged = mean(EEG_selected_absolute_coarse_spectrum_edge_all_trials.spectrum,1);
 
 % 6.5. Averaging across trials (retrieving mean and standard deviation)
-% AND CONVERTING IT INTO DB!!!
-% For Absolute Data
+% TRIALS / BASELINE
 EEG_absolute_spectrum_20_averaged = mean(EEG_absolute_spectrum_20_all_trials_averaged,3);
 EEG_absolute_spectrum_20_std = std(EEG_absolute_spectrum_20_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_spectrum_20_all_trials_averaged,3));
 EEG_absolute_spectrum_45_averaged = mean(EEG_absolute_spectrum_45_all_trials_averaged,3);
 EEG_absolute_spectrum_45_std = std(EEG_absolute_spectrum_45_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_spectrum_45_all_trials_averaged,3));
 
-EEG_absolute_spectrum_20_averaged_dB = 10*log10(mean(EEG_absolute_spectrum_20_all_trials_averaged,3));
-EEG_absolute_spectrum_20_std_dB = 10*log10(std(EEG_absolute_spectrum_20_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_spectrum_20_all_trials_averaged,3)));
-EEG_absolute_spectrum_45_averaged_dB = 10*log10(mean(EEG_absolute_spectrum_45_all_trials_averaged,3));
-EEG_absolute_spectrum_45_std_dB = 10*log10(std(EEG_absolute_spectrum_45_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_spectrum_45_all_trials_averaged,3)));
+EEG_absolute_base_spectrum_20_averaged = mean(EEG_absolute_base_spectrum_20_all_trials_averaged,3);
+EEG_absolute_base_spectrum_20_std = std(EEG_absolute_base_spectrum_20_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_base_spectrum_20_all_trials_averaged,3));
+EEG_absolute_base_spectrum_45_averaged = mean(EEG_absolute_base_spectrum_45_all_trials_averaged,3);
+EEG_absolute_base_spectrum_45_std = std(EEG_absolute_base_spectrum_45_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_base_spectrum_45_all_trials_averaged,3));
 
-% For Absolute Baseline Data
-if strcmp(choice_of_baseline, 'black')
-    EEG_absolute_base_spectrum_20_averaged_dB = 10*log10(mean(EEG_absolute_base_spectrum_20_all_trials_averaged,3));
-    EEG_absolute_base_spectrum_20_std_dB = 10*log10(std(EEG_absolute_base_spectrum_20_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_base_spectrum_20_all_trials_averaged,3)));
-    EEG_absolute_base_spectrum_45_averaged_dB = 10*log10(mean(EEG_absolute_base_spectrum_45_all_trials_averaged,3));
-    EEG_absolute_base_spectrum_45_std_dB = 10*log10(std(EEG_absolute_base_spectrum_45_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_base_spectrum_45_all_trials_averaged,3)));
-end
+EEG_absolute_coarse_spectrum_black_averaged = mean(EEG_absolute_coarse_spectrum_black_all_trials_averaged,3); %EEG_selected_absolute_coarse_spectrum_black_all_trials
+EEG_absolute_coarse_spectrum_black_std = std(EEG_absolute_coarse_spectrum_black_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_coarse_spectrum_black_all_trials_averaged,3));
+EEG_absolute_coarse_spectrum_edge_averaged = mean(EEG_absolute_coarse_spectrum_edge_all_trials_averaged,3);
+EEG_absolute_coarse_spectrum_edge_std = std(EEG_absolute_coarse_spectrum_edge_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_coarse_spectrum_edge_all_trials_averaged,3));
 
-if strcmp(choice_of_baseline, 'black')
-    EEG_absolute_base_spectrum_20_averaged = mean(EEG_absolute_base_spectrum_20_all_trials_averaged,3);
-    EEG_absolute_base_spectrum_20_std = std(EEG_absolute_base_spectrum_20_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_base_spectrum_20_all_trials_averaged,3));
-    EEG_absolute_base_spectrum_45_averaged = mean(EEG_absolute_base_spectrum_45_all_trials_averaged,3);
-    EEG_absolute_base_spectrum_45_std = std(EEG_absolute_base_spectrum_45_all_trials_averaged, [], 3)/sqrt(size(EEG_absolute_base_spectrum_45_all_trials_averaged,3));
-end
+% Fill in function to plot std (TRIALS / BASELINE)
+EEG_absolute_spectrum_20_averaged_std_above = EEG_absolute_spectrum_20_averaged + EEG_absolute_spectrum_20_std./2;
+EEG_absolute_spectrum_20_averaged_std_below = EEG_absolute_spectrum_20_averaged - EEG_absolute_spectrum_20_std./2;
+inBetween_absolute_20 = [EEG_absolute_spectrum_20_averaged_std_below(:); flipud(EEG_absolute_spectrum_20_averaged_std_above(:))];
+
+EEG_absolute_spectrum_45_averaged_std_above = EEG_absolute_spectrum_45_averaged + EEG_absolute_spectrum_45_std./2;
+EEG_absolute_spectrum_45_averaged_std_below = EEG_absolute_spectrum_45_averaged - EEG_absolute_spectrum_45_std./2;
+inBetween_absolute_45 = [EEG_absolute_spectrum_45_averaged_std_below(:); flipud(EEG_absolute_spectrum_45_averaged_std_above(:))];
+
+% Baseline
+EEG_absolute_base_spectrum_20_averaged_above = EEG_absolute_base_spectrum_20_averaged + EEG_absolute_base_spectrum_20_std./2;
+EEG_absolute_base_spectrum_20_averaged_below = EEG_absolute_base_spectrum_20_averaged - EEG_absolute_base_spectrum_20_std./2;
+inBetween_absolute_baseline_20 = [EEG_absolute_base_spectrum_20_averaged_below(:); flipud(EEG_absolute_base_spectrum_20_averaged_above(:))];
+
+EEG_absolute_base_spectrum_45_averaged_above = EEG_absolute_base_spectrum_45_averaged + EEG_absolute_base_spectrum_45_std./2;
+EEG_absolute_base_spectrum_45_averaged_below = EEG_absolute_base_spectrum_45_averaged - EEG_absolute_base_spectrum_45_std./2;
+inBetween_absolute_baseline_45 = [EEG_absolute_base_spectrum_45_averaged_below(:); flipud(EEG_absolute_base_spectrum_45_averaged_above(:))];
+
+% Coarse
+EEG_absolute_coarse_spectrum_black_averaged_above = EEG_absolute_coarse_spectrum_black_averaged + EEG_absolute_coarse_spectrum_black_std./2;
+EEG_absolute_coarse_spectrum_black_averaged_below = EEG_absolute_coarse_spectrum_black_averaged - EEG_absolute_coarse_spectrum_black_std./2;
+inBetween_absolute_coarse_black = [EEG_absolute_coarse_spectrum_black_averaged_below(:); flipud(EEG_absolute_coarse_spectrum_black_averaged_above(:))];
+
+EEG_absolute_coarse_spectrum_edge_averaged_above = EEG_absolute_coarse_spectrum_edge_averaged + EEG_absolute_coarse_spectrum_edge_std./2;
+EEG_absolute_coarse_spectrum_edge_averaged_below = EEG_absolute_coarse_spectrum_edge_averaged - EEG_absolute_coarse_spectrum_edge_std./2;
+inBetween_absolute_coarse_edge = [EEG_absolute_coarse_spectrum_edge_averaged_below(:); flipud(EEG_absolute_coarse_spectrum_edge_averaged_above(:))];
 
 
-%% 7. Making plots for Absolute Spectra: LINEAR SCALE OR IN DB !!!
+% Converting into dB for the log plots (TRIALS, BASELINE, COARSE)
+EEG_absolute_spectrum_20_averaged_dB = 10*log10(EEG_absolute_spectrum_20_averaged);
+EEG_absolute_spectrum_45_averaged_dB = 10*log10(EEG_absolute_spectrum_45_averaged);
+EEG_absolute_spectrum_20_std_dB = 10*log10(EEG_absolute_spectrum_20_std);
+EEG_absolute_spectrum_45_std_dB = 10*log10(EEG_absolute_spectrum_45_std);
+inBetween_absolute_20_dB = 10*log10(inBetween_absolute_20);
+inBetween_absolute_45_dB = 10*log10(inBetween_absolute_45);
+
+EEG_absolute_base_spectrum_20_averaged_dB = 10*log10(EEG_absolute_base_spectrum_20_averaged);
+EEG_absolute_base_spectrum_45_averaged_dB = 10*log10(EEG_absolute_base_spectrum_45_averaged);
+EEG_absolute_base_spectrum_20_std_dB = 10*log10(EEG_absolute_base_spectrum_20_std);
+EEG_absolute_base_spectrum_45_std_dB = 10*log10(EEG_absolute_base_spectrum_45_std);
+inBetween_absolute_baseline_20_dB = 10*log10(inBetween_absolute_baseline_20);
+inBetween_absolute_baseline_45_dB = 10*log10(inBetween_absolute_baseline_45);
+
+
+
+
+
+
+
+
+
+
+
+%% 7. Making plots for Absolute Spectra
 
 % 7.1. Defining variables of interest for plots:
-freqs_of_interest = EEG_selected_absolute_spectrum_20_all_trials.freqs; % Note: frequencies are supposed to be the same for all conditions
-x2 = [freqs_of_interest(:); flipud(freqs_of_interest(:))]; % needed for std plot...
+freqs_of_interest = EEG_selected_absolute_spectrum_20_all_trials.freqs;
+x2 = [freqs_of_interest(:); flipud(freqs_of_interest(:))]; % needed for std plot
 
-% Defining the colors for the respective field of views
 color_20 = [0.83 0.14 0.14];
 color_45 = [1.00 0.54 0.00];
 color_baseline = 1/255 * [0, 104, 87];
-
-% Step 1: Need to define new "lines" which are of width "std", in order to plot standard
-% deviation on line plots (cf Mathworks)
-% For Absolute Data
-EEG_absolute_spectrum_20_averaged_std_above = EEG_absolute_spectrum_20_averaged + EEG_absolute_spectrum_20_std./2;
-EEG_absolute_spectrum_20_averaged_std_below = EEG_absolute_spectrum_20_averaged - EEG_absolute_spectrum_20_std./2;
-EEG_absolute_spectrum_45_averaged_std_above = EEG_absolute_spectrum_45_averaged + EEG_absolute_spectrum_45_std./2;
-EEG_absolute_spectrum_45_averaged_std_below = EEG_absolute_spectrum_45_averaged - EEG_absolute_spectrum_45_std./2;
-
-% For Absolute Baseline Data
-if strcmp(choice_of_baseline, 'black')
-    EEG_absolute_base_spectrum_20_averaged_above = EEG_absolute_base_spectrum_20_averaged + EEG_absolute_base_spectrum_20_std./2;
-    EEG_absolute_base_spectrum_20_averaged_below = EEG_absolute_base_spectrum_20_averaged - EEG_absolute_base_spectrum_20_std./2;
-    EEG_absolute_base_spectrum_45_averaged_above = EEG_absolute_base_spectrum_45_averaged + EEG_absolute_base_spectrum_45_std./2;
-    EEG_absolute_base_spectrum_45_averaged_below = EEG_absolute_base_spectrum_45_averaged - EEG_absolute_base_spectrum_45_std./2;
-end
-
-
-% Step 2: Create fill function
-% For Absolute Data
-inBetween_absolute_20 = [EEG_absolute_spectrum_20_averaged_std_below(:); flipud(EEG_absolute_spectrum_20_averaged_std_above(:))];
-inBetween_absolute_45 = [EEG_absolute_spectrum_45_averaged_std_below(:); flipud(EEG_absolute_spectrum_45_averaged_std_above(:))];
-
-% For Absolute Baseline Data
-if strcmp(choice_of_baseline, 'black')
-    inBetween_absolute_baseline_20 = [EEG_absolute_base_spectrum_20_averaged_below(:); flipud(EEG_absolute_base_spectrum_20_averaged_above(:))];
-    inBetween_absolute_baseline_45 = [EEG_absolute_base_spectrum_45_averaged_below(:); flipud(EEG_absolute_base_spectrum_45_averaged_above(:))];
-end
-
-% Converting into dB for the logarithmic plots
-inBetween_absolute_20_dB = 10*log10(inBetween_absolute_20);
-inBetween_absolute_45_dB = 10*log10(inBetween_absolute_45);
-if strcmp(choice_of_baseline, 'black')
-    inBetween_absolute_baseline_20_dB = 10*log10(inBetween_absolute_baseline_20);
-    inBetween_absolute_baseline_45_dB = 10*log10(inBetween_absolute_baseline_45);
-end
 
 if strcmp(plot_scale, 'dB')
     % 7.2. Plotting absolute spectra separately for each FoV, averaged over all trials and all electrodes of brain RoI
@@ -295,22 +279,17 @@ if strcmp(plot_scale, 'dB')
         figure;
         plot(freqs_of_interest, EEG_absolute_spectrum_20_averaged_dB', 'Color', color_20, 'LineWidth', 2);
         hold on;
-        %errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std);
         plot(freqs_of_interest, EEG_absolute_spectrum_45_averaged_dB', 'Color', color_45, 'LineWidth', 2);
-        % plot(freqs_of_interest, EEG_absolute_spectrum_110_averaged_dB', 'Color', color_110, 'LineWidth', 2);
         if plot_std
     %        errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std, 'Color', color_20);
     %        errorbar(freqs_of_interest, EEG_absolute_spectrum_45_averaged, EEG_absolute_spectrum_45_std, 'Color', color_45);
-    %        errorbar(freqs_of_interest, EEG_absolute_spectrum_110_averaged, EEG_absolute_spectrum_110_std, 'Color', color_110);
            patch('XData',x2,'YData',inBetween_absolute_20_dB,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
            patch('XData',x2,'YData',inBetween_absolute_45_dB,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
-           % patch('XData',x2,'YData',inBetween_absolute_110_dB,'FaceColor', color_110,'EdgeColor',color_110,'FaceAlpha', 0.2);
         end
         hold off;
         grid on;
         xlabel('Frequencies [Hz]');
         ylabel('Power [dB]');
-        %legend('20°','45°', '110°');
         legend('20°','45°');
         title({['Absolute Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV'});
 
@@ -324,211 +303,199 @@ if strcmp(plot_scale, 'dB')
         for line = 1:size(EEG_absolute_spectrum_45_all_trials_averaged,3)
             plot(freqs_of_interest, 10*log10(EEG_absolute_spectrum_45_all_trials_averaged(:,:,line)), 'Color', color_45);
         end
-        % for line = 1:size(EEG_absolute_spectrum_110_all_trials_averaged,3)
-        %     plot(freqs_of_interest, 10*log10(EEG_absolute_spectrum_110_all_trials_averaged(:,:,line)), 'Color', color_110);
-        % end
         hold off;
         grid on;
         xlabel('Frequencies [Hz]');
         ylabel('Power [dB]');
         title(['Absolute Spectrum for ' brain_region_name ' Electrodes (all trials)']);
-
     end
 
     % 7.3. Plotting absolute spectra OF BASELINE for each FoV, averaged over all trials and all electrodes of brain RoI
-    if plot_absolute_baseline_spectrum
-        if strcmp(choice_of_baseline, 'black')
-            % If the baseline is : 1 per trial
-            if strcmp(choice_of_black_baseline,'one_per_trial')
-                figure;
-                plot(freqs_of_interest, 10*log10(EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,1)), 'Color', color_20);
-                hold on;
-                for line = 2:size(EEG_absolute_base_spectrum_20_all_trials_averaged,3)
-                    plot(freqs_of_interest, 10*log10(EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,line)), 'Color', color_20);
-                end
-                for line = 1:size(EEG_absolute_base_spectrum_45_all_trials_averaged,3)
-                    plot(freqs_of_interest, 10*log10(EEG_absolute_base_spectrum_45_all_trials_averaged(:,:,line)), 'Color', color_45);
-                end
-                % for line = 1:size(EEG_absolute_base_spectrum_110_all_trials_averaged,3)
-                %     plot(freqs_of_interest, 10*log10(EEG_absolute_base_spectrum_110_all_trials_averaged(:,:,line)), 'Color', color_110);
-                % end
-                hold off;
-                grid on;
-                xlabel('Frequencies [Hz]');
-                ylabel('Power [dB]');
-                title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(1 baseline / trial)'});
-            end
-            % If the baseline is: 1 per Field of View
-            if strcmp(choice_of_black_baseline, 'one_per_FoV')
-                figure;
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged_dB', 'Color', color_20, 'LineWidth', 2);
-                hold on;
-                %errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std);
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_45_averaged_dB', 'Color', color_45, 'LineWidth', 2);
-                % plot(freqs_of_interest, EEG_absolute_base_spectrum_110_averaged_dB', 'Color', color_110, 'LineWidth', 2);
-                if plot_std
-                    patch('XData',x2,'YData',inBetween_absolute_baseline_20_dB,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
-                    patch('XData',x2,'YData',inBetween_absolute_baseline_45_dB,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
-                    % patch('XData',x2,'YData',inBetween_absolute_baseline_110_dB,'FaceColor', color_110,'EdgeColor',color_110,'FaceAlpha', 0.2);
-                end
-                hold off;
-                grid on;
-                xlabel('Frequencies [Hz]');
-                ylabel('Power [dB]');
-                % legend('20°','45°', '110°');
-                legend('20°','45°');
-                title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline / FoV)'});
-            end
-            % If the baseline is: A single baseline for everything
-            if strcmp(choice_of_black_baseline, 'one_for_all')
-                figure;
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged_dB, 'Color', 'k', 'LineWidth', 2);
-                hold on;
-                if plot_std
-                    errorbar(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged_dB, EEG_absolute_base_spectrum_20_std_dB);
-                end
-                hold off;
-                grid on;
-                xlabel('Frequencies [Hz]');
-                ylabel('Power [dB]');
-                title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline for all)'});
-            end
-        end
-    end
-elseif strcmp(plot_scale, 'linear')
-    % 7.2. Plotting absolute spectra separately for each FoV, averaged over all trials and all electrodes of brain RoI
-    if plot_absolute_spectrum
-        figure;
-        plot(freqs_of_interest, EEG_absolute_spectrum_20_averaged', 'Color', color_20, 'LineWidth', 2);
-        hold on;
-        %errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std);
-        plot(freqs_of_interest, EEG_absolute_spectrum_45_averaged', 'Color', color_45, 'LineWidth', 2);
-        plot(freqs_of_interest, EEG_absolute_spectrum_110_averaged', 'Color', color_110, 'LineWidth', 2);
-        if plot_std
-    %        errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std, 'Color', color_20);
-    %        errorbar(freqs_of_interest, EEG_absolute_spectrum_45_averaged, EEG_absolute_spectrum_45_std, 'Color', color_45);
-    %        errorbar(freqs_of_interest, EEG_absolute_spectrum_110_averaged, EEG_absolute_spectrum_110_std, 'Color', color_110);
-           patch('XData',x2,'YData',inBetween_absolute_20_linear,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
-           patch('XData',x2,'YData',inBetween_absolute_45_linear,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
-           patch('XData',x2,'YData',inBetween_absolute_110_linear,'FaceColor', color_110,'EdgeColor',color_110,'FaceAlpha', 0.2);
-        end
-        hold off;
-        grid on;
-        xlabel('Frequencies [Hz]');
-        ylabel('Power microV^2/Hz');
-        legend('20°','45°', '110°');
-        title({['Absolute Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV'});
-
-        % Plot of every single trial line
-        figure;
-        plot(freqs_of_interest, EEG_absolute_spectrum_20_all_trials_averaged(:,:,1), 'Color', color_20)
-        hold on;
-        for line = 2:size(EEG_absolute_spectrum_20_all_trials_averaged,3)
-            plot(freqs_of_interest, EEG_absolute_spectrum_20_all_trials_averaged(:,:,line), 'Color', color_20);
-        end
-        for line = 1:size(EEG_absolute_spectrum_45_all_trials_averaged,3)
-            plot(freqs_of_interest, EEG_absolute_spectrum_45_all_trials_averaged(:,:,line), 'Color', color_45);
-        end
-        for line = 1:size(EEG_absolute_spectrum_110_all_trials_averaged,3)
-            plot(freqs_of_interest, EEG_absolute_spectrum_110_all_trials_averaged(:,:,line), 'Color', color_110);
-        end
-        hold off;
-        grid on;
-        xlabel('Frequencies [Hz]');
-        ylabel('Power microV^2/Hz');
-        title(['Absolute Spectrum for ' brain_region_name ' Electrodes (all trials)']);
-
-    end
-
-    % 7.3. Plotting absolute spectra OF BASELINE for each FoV, averaged over all trials and all electrodes of brain RoI
-    if plot_absolute_baseline_spectrum
-        if strcmp(choice_of_baseline, 'black')
-            % If the baseline is : 1 per trial
-            if strcmp(choice_of_black_baseline,'one_per_trial')
-                figure;
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,1), 'Color', color_20);
-                hold on;
-                for line = 2:size(EEG_absolute_base_spectrum_20_all_trials_averaged,3)
-                    plot(freqs_of_interest, EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,line), 'Color', color_20);
-                end
-                for line = 1:size(EEG_absolute_base_spectrum_45_all_trials_averaged,3)
-                    plot(freqs_of_interest, EEG_absolute_base_spectrum_45_all_trials_averaged(:,:,line), 'Color', color_45);
-                end
-                for line = 1:size(EEG_absolute_base_spectrum_110_all_trials_averaged,3)
-                    plot(freqs_of_interest, EEG_absolute_base_spectrum_110_all_trials_averaged(:,:,line), 'Color', color_110);
-                end
-                hold off;
-                grid on;
-                xlabel('Frequencies [Hz]');
-                ylabel('Power microV^2/Hz');
-                title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(1 baseline / trial)'});
-            end
-            % If the baseline is: 1 per Field of View
-            if strcmp(choice_of_black_baseline, 'one_per_FoV')
-                figure;
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged', 'Color', color_20, 'LineWidth', 2);
-                hold on;
-                %errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std);
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_45_averaged', 'Color', color_45, 'LineWidth', 2);
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_110_averaged', 'Color', color_110, 'LineWidth', 2);
-                if plot_std
-                    errorbar(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged, EEG_absolute_base_spectrum_20_std);
-                    errorbar(freqs_of_interest, EEG_absolute_base_spectrum_45_averaged, EEG_absolute_base_spectrum_45_std);
-                    errorbar(freqs_of_interest, EEG_absolute_base_spectrum_110_averaged, EEG_absolute_base_spectrum_110_std);
-%                     patch('XData',x2,'YData',inBetween_absolute_baseline_20_linear,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
-%                     patch('XData',x2,'YData',inBetween_absolute_baseline_45_linear,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
-%                     patch('XData',x2,'YData',inBetween_absolute_baseline_110_linear,'FaceColor', color_110,'EdgeColor',color_110,'FaceAlpha', 0.2);
-                end
-                hold off;
-                grid on;
-                xlabel('Frequencies [Hz]');
-                ylabel('Power microV^2/Hz');
-                legend('20°','45°', '110°');
-                title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline / FoV)'});
-            end
-            % If the baseline is: A single baseline for everything
-            if strcmp(choice_of_black_baseline, 'one_for_all')
-                figure;
-                plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged, 'Color', 'k', 'LineWidth', 2);
-                hold on;
-                if plot_std
-                    errorbar(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged, EEG_absolute_base_spectrum_20_std);
-                end
-                hold off;
-                grid on;
-                xlabel('Frequencies [Hz]');
-                ylabel('Power microV^2/Hz');
-                title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline for all)'});
-            end
-        elseif strcmp(choice_of_baseline, '110°')
-            % Plotting all 110° trials which will be used as baseline
+    if strcmp(choice_of_baseline, 'black')
+        if strcmp(choice_of_black_baseline,'one_per_trial')
             figure;
-            plot(freqs_of_interest, EEG_absolute_spectrum_110_all_trials_averaged(:,:,1), 'Color', color_baseline);
+            plot(freqs_of_interest, 10*log10(EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,1)), 'Color', color_20);
             hold on;
-            for line = 2:size(EEG_absolute_spectrum_110_all_trials_averaged,3)
-                plot(freqs_of_interest, EEG_absolute_spectrum_110_all_trials_averaged(:,:,line), 'Color', color_baseline);
+            for line = 2:size(EEG_absolute_base_spectrum_20_all_trials_averaged,3)
+                plot(freqs_of_interest, 10*log10(EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,line)), 'Color', color_20);
+            end
+            for line = 1:size(EEG_absolute_base_spectrum_45_all_trials_averaged,3)
+                plot(freqs_of_interest, 10*log10(EEG_absolute_base_spectrum_45_all_trials_averaged(:,:,line)), 'Color', color_45);
             end
             hold off;
             grid on;
             xlabel('Frequencies [Hz]');
-            ylabel('Power microV^2/Hz');
-            title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(110° baseline - all trials)'});
+            ylabel('Power [dB]');
+            title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(1 baseline / trial)'});
+        end
+        % if strcmp(choice_of_black_baseline, 'one_per_FoV')
+        %     figure;
+        %     plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged_dB', 'Color', color_20, 'LineWidth', 2);
+        %     hold on;
+        %     %errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std);
+        %     plot(freqs_of_interest, EEG_absolute_base_spectrum_45_averaged_dB', 'Color', color_45, 'LineWidth', 2);
+        %     % plot(freqs_of_interest, EEG_absolute_base_spectrum_110_averaged_dB', 'Color', color_110, 'LineWidth', 2);
+        %     if plot_std
+        %         patch('XData',x2,'YData',inBetween_absolute_baseline_20_dB,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
+        %         patch('XData',x2,'YData',inBetween_absolute_baseline_45_dB,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
+        %     end
+        %     hold off;
+        %     grid on;
+        %     xlabel('Frequencies [Hz]');
+        %     ylabel('Power [dB]');
+        %     legend('20°','45°');
+        %     title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline / FoV)'});
+        % end
 
-            % Plotting averaged 110° baseline
+        if strcmp(choice_of_black_baseline, 'one_for_all')
             figure;
-            plot(freqs_of_interest, EEG_absolute_base_spectrum_averaged, 'Color', 'k', 'LineWidth', 2, 'Color', color_baseline);
+            plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged_dB, 'Color', 'k', 'LineWidth', 2);
             hold on;
             if plot_std
-                errorbar(freqs_of_interest, EEG_absolute_base_spectrum_averaged, EEG_absolute_base_spectrum_std, 'Color', color_baseline);
+                errorbar(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged_dB, EEG_absolute_base_spectrum_20_std_dB);
             end
             hold off;
             grid on;
             xlabel('Frequencies [Hz]');
-            ylabel('Power microV^2/Hz');
-            title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (110° averaged baseline for all)'});
-
+            ylabel('Power [dB]');
+            title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline for all)'});
         end
     end
+
+% elseif strcmp(plot_scale, 'linear')
+%     % 7.2. Plotting absolute spectra separately for each FoV, averaged over all trials and all electrodes of brain RoI
+%     if plot_absolute_spectrum
+%         figure;
+%         plot(freqs_of_interest, EEG_absolute_spectrum_20_averaged', 'Color', color_20, 'LineWidth', 2);
+%         hold on;
+%         %errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std);
+%         plot(freqs_of_interest, EEG_absolute_spectrum_45_averaged', 'Color', color_45, 'LineWidth', 2);
+%         plot(freqs_of_interest, EEG_absolute_spectrum_110_averaged', 'Color', color_110, 'LineWidth', 2);
+%         if plot_std
+%     %        errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std, 'Color', color_20);
+%     %        errorbar(freqs_of_interest, EEG_absolute_spectrum_45_averaged, EEG_absolute_spectrum_45_std, 'Color', color_45);
+%     %        errorbar(freqs_of_interest, EEG_absolute_spectrum_110_averaged, EEG_absolute_spectrum_110_std, 'Color', color_110);
+%            patch('XData',x2,'YData',inBetween_absolute_20_linear,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
+%            patch('XData',x2,'YData',inBetween_absolute_45_linear,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
+%            patch('XData',x2,'YData',inBetween_absolute_110_linear,'FaceColor', color_110,'EdgeColor',color_110,'FaceAlpha', 0.2);
+%         end
+%         hold off;
+%         grid on;
+%         xlabel('Frequencies [Hz]');
+%         ylabel('Power microV^2/Hz');
+%         legend('20°','45°', '110°');
+%         title({['Absolute Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV'});
+% 
+%         % Plot of every single trial line
+%         figure;
+%         plot(freqs_of_interest, EEG_absolute_spectrum_20_all_trials_averaged(:,:,1), 'Color', color_20)
+%         hold on;
+%         for line = 2:size(EEG_absolute_spectrum_20_all_trials_averaged,3)
+%             plot(freqs_of_interest, EEG_absolute_spectrum_20_all_trials_averaged(:,:,line), 'Color', color_20);
+%         end
+%         for line = 1:size(EEG_absolute_spectrum_45_all_trials_averaged,3)
+%             plot(freqs_of_interest, EEG_absolute_spectrum_45_all_trials_averaged(:,:,line), 'Color', color_45);
+%         end
+%         for line = 1:size(EEG_absolute_spectrum_110_all_trials_averaged,3)
+%             plot(freqs_of_interest, EEG_absolute_spectrum_110_all_trials_averaged(:,:,line), 'Color', color_110);
+%         end
+%         hold off;
+%         grid on;
+%         xlabel('Frequencies [Hz]');
+%         ylabel('Power microV^2/Hz');
+%         title(['Absolute Spectrum for ' brain_region_name ' Electrodes (all trials)']);
+% 
+%     end
+% 
+%     % 7.3. Plotting absolute spectra OF BASELINE for each FoV, averaged over all trials and all electrodes of brain RoI
+%     if plot_absolute_baseline_spectrum
+%         if strcmp(choice_of_baseline, 'black')
+%             % If the baseline is : 1 per trial
+%             if strcmp(choice_of_black_baseline,'one_per_trial')
+%                 figure;
+%                 plot(freqs_of_interest, EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,1), 'Color', color_20);
+%                 hold on;
+%                 for line = 2:size(EEG_absolute_base_spectrum_20_all_trials_averaged,3)
+%                     plot(freqs_of_interest, EEG_absolute_base_spectrum_20_all_trials_averaged(:,:,line), 'Color', color_20);
+%                 end
+%                 for line = 1:size(EEG_absolute_base_spectrum_45_all_trials_averaged,3)
+%                     plot(freqs_of_interest, EEG_absolute_base_spectrum_45_all_trials_averaged(:,:,line), 'Color', color_45);
+%                 end
+%                 for line = 1:size(EEG_absolute_base_spectrum_110_all_trials_averaged,3)
+%                     plot(freqs_of_interest, EEG_absolute_base_spectrum_110_all_trials_averaged(:,:,line), 'Color', color_110);
+%                 end
+%                 hold off;
+%                 grid on;
+%                 xlabel('Frequencies [Hz]');
+%                 ylabel('Power microV^2/Hz');
+%                 title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(1 baseline / trial)'});
+%             end
+%             % If the baseline is: 1 per Field of View
+%             if strcmp(choice_of_black_baseline, 'one_per_FoV')
+%                 figure;
+%                 plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged', 'Color', color_20, 'LineWidth', 2);
+%                 hold on;
+%                 %errorbar(freqs_of_interest, EEG_absolute_spectrum_20_averaged, EEG_absolute_spectrum_20_std);
+%                 plot(freqs_of_interest, EEG_absolute_base_spectrum_45_averaged', 'Color', color_45, 'LineWidth', 2);
+%                 plot(freqs_of_interest, EEG_absolute_base_spectrum_110_averaged', 'Color', color_110, 'LineWidth', 2);
+%                 if plot_std
+%                     errorbar(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged, EEG_absolute_base_spectrum_20_std);
+%                     errorbar(freqs_of_interest, EEG_absolute_base_spectrum_45_averaged, EEG_absolute_base_spectrum_45_std);
+%                     errorbar(freqs_of_interest, EEG_absolute_base_spectrum_110_averaged, EEG_absolute_base_spectrum_110_std);
+% %                     patch('XData',x2,'YData',inBetween_absolute_baseline_20_linear,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
+% %                     patch('XData',x2,'YData',inBetween_absolute_baseline_45_linear,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
+% %                     patch('XData',x2,'YData',inBetween_absolute_baseline_110_linear,'FaceColor', color_110,'EdgeColor',color_110,'FaceAlpha', 0.2);
+%                 end
+%                 hold off;
+%                 grid on;
+%                 xlabel('Frequencies [Hz]');
+%                 ylabel('Power microV^2/Hz');
+%                 legend('20°','45°', '110°');
+%                 title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline / FoV)'});
+%             end
+%             % If the baseline is: A single baseline for everything
+%             if strcmp(choice_of_black_baseline, 'one_for_all')
+%                 figure;
+%                 plot(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged, 'Color', 'k', 'LineWidth', 2);
+%                 hold on;
+%                 if plot_std
+%                     errorbar(freqs_of_interest, EEG_absolute_base_spectrum_20_averaged, EEG_absolute_base_spectrum_20_std);
+%                 end
+%                 hold off;
+%                 grid on;
+%                 xlabel('Frequencies [Hz]');
+%                 ylabel('Power microV^2/Hz');
+%                 title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (1 baseline for all)'});
+%             end
+%         elseif strcmp(choice_of_baseline, '110°')
+%             % Plotting all 110° trials which will be used as baseline
+%             figure;
+%             plot(freqs_of_interest, EEG_absolute_spectrum_110_all_trials_averaged(:,:,1), 'Color', color_baseline);
+%             hold on;
+%             for line = 2:size(EEG_absolute_spectrum_110_all_trials_averaged,3)
+%                 plot(freqs_of_interest, EEG_absolute_spectrum_110_all_trials_averaged(:,:,line), 'Color', color_baseline);
+%             end
+%             hold off;
+%             grid on;
+%             xlabel('Frequencies [Hz]');
+%             ylabel('Power microV^2/Hz');
+%             title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(110° baseline - all trials)'});
+% 
+%             % Plotting averaged 110° baseline
+%             figure;
+%             plot(freqs_of_interest, EEG_absolute_base_spectrum_averaged, 'Color', 'k', 'LineWidth', 2, 'Color', color_baseline);
+%             hold on;
+%             if plot_std
+%                 errorbar(freqs_of_interest, EEG_absolute_base_spectrum_averaged, EEG_absolute_base_spectrum_std, 'Color', color_baseline);
+%             end
+%             hold off;
+%             grid on;
+%             xlabel('Frequencies [Hz]');
+%             ylabel('Power microV^2/Hz');
+%             title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV (110° averaged baseline for all)'});
+% 
+%         end
+%     end
 end
     
 % % % % % % % %% 8. Computing the relative Spectrum and Plotting them
@@ -684,10 +651,7 @@ end
 % List of variables to plot according to what we want
 plot_20vbase = true;
 plot_45vbase = true;
-plot_110vbase = false;
-plot_20v110 = false;
 plot_20v45 = true;
-plot_45v110 = false;
 plot_illustrative_conclusion_plots = true;
 
 % Custom color map
@@ -863,13 +827,12 @@ spectra_conditions.Chans = {EEG_trial_data.(participants{end}).chanlocs(:).label
 spectra_conditions.Freqs = 1:83; % 1:40; Frequencies from 1 to 42 with a step of 0.5
 spectra_conditions.FoV20 = spectrum_trial_20;
 spectra_conditions.FoV45 = spectrum_trial_45;
-% spectra_conditions.FoV110 = spectrum_trial_110;
 
 options = struct();
 options.fields = {'FoV20', 'FoV45'}; %, 'FoV110'
 options.model = 'classic';
 options.style = 'chanXfreq';
-options.ElecFile = strcat(study_config.study_folder,study_config.raw_data_folder,'P001\',study_config.channel_locations_filename);% 'C:\Users\Louise\Desktop\EEG_Participant_Data\0_raw-data\(participants{end})\CA-213_NoEOG.elc';
+options.ElecFile = strcat(study_config.study_folder,study_config.raw_data_folder,'P001\',study_config.channel_locations_filename);
 options.MaxDeg = 20;
 options.pairing = 'on';
 options.N_reps = 256;
@@ -887,7 +850,7 @@ end
 % Making ANOVA 3 Conditions Plot
 [data_heatmap_anova_conditionvscondition, data_heatmap_anova_conditionvscondition_cluster_id] = format_for_heatmap_conditionvcondition_anova(clustered_stats_table_conditionvcondition, statistical_clusters_conditionvcondition);
 
-if plot_20v45 % plot_20v110 || plot_20v45 || plot_45v110
+if plot_20v45
     y = linspace(1,42,83);
     figure; 
     myCmap = asymColorMapWhiteZero([-1,550], N_colors_standard);
@@ -2070,9 +2033,7 @@ spectrum_trial_relative_45vbase_dB =  spectrum_trial_45_dB - spectrum_trial_45_b
 spectra_conditions = struct();
 spectra_conditions.BaselineModel = '';
 spectra_conditions.Chans = {EEG_trial_data.(participants{end}).chanlocs(:).labels};
-spectra_conditions.Freqs = 1:83; % 1:40; Frequencies from 1 to 42 with a step of 0.5
-% spectra_conditions.FoV20v110 = spectrum_trial_relative_20v110_dB;
-% spectra_conditions.FoV45v110 = spectrum_trial_relative_45v110_dB;
+spectra_conditions.Freqs = 1:83;
 spectra_conditions.FoV20v110 = spectrum_trial_relative_20vbase_dB;
 spectra_conditions.FoV45v110 = spectrum_trial_relative_45vbase_dB;
 
@@ -2120,7 +2081,6 @@ if plot_baselinecorrected
     myCmap = asymColorMapWhiteZero([-1.5,1.5], N_colors_standard);
     heatmap_baselinecorrected = heatmap(new_electrode_labels,y, data_heatmap_baselinecorrected', 'Colormap', myCmap, 'ColorLimits', [-1.5,1.5], 'ColorbarVisible', 'on', 'XLabel', 'Electrodes', 'YLabel', 'Frequencies [Hz]');
     heatmap_baselinecorrected.Title = '20° corrected with 20° baseline VS. 45° corrected with 45° baseline';
-    % Showing only the ticks of interest
     kept_frequencies = {'1','2','4','7.5','12','30'};
     CustomYLabels = string(y);
     CustomYLabels(find(~ismember(CustomYLabels, kept_frequencies)))=" ";
