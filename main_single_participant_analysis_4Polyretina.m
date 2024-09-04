@@ -27,7 +27,7 @@ if ~exist(output_filepath, 'dir')
 end
 
 %subject_inds = [1, 2, 3, 6, 7, 8, 9];
-%subject_inds = 1;
+%subject_inds = 6;
 subject_inds = [1, 2, 3, 6];
 
 % Checking if computing the spectra has already been done

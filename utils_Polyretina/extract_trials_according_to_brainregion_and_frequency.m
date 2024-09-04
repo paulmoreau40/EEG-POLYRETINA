@@ -32,8 +32,8 @@ total_num_trials = size({EEG_relative_spectrum.metaInfo.participant_id},2);
 % Defining variables to know if we moved onto another participant
 previous_participant = EEG_relative_spectrum.metaInfo(1).participant_id;
 count_trial = 1;
-count_trial_bis = 1;
-count_meta = 1;
+count_trial_bis = 1; % ith trial of the participant
+count_meta = 1; % new ith of metainfo for all participants
 
 if bool_divide_by_FoV %  TRIALS AND BASELINE
     disp(['Keeping only trials of interst for FoV: ' num2str(wanted_FoV) '...'])
@@ -75,8 +75,8 @@ if bool_divide_by_FoV %  TRIALS AND BASELINE
             % Updating counting variables
             count_trial = count_trial + 1;
             count_meta = count_meta + 1;
-            previous_participant = current_participant;
         end
+        previous_participant = current_participant;
         count_trial_bis = count_trial_bis + 1;
     end
     
@@ -121,9 +121,9 @@ else % COARSE BASELINE
             % Updating counting variables
             count_trial = count_trial + 1;
             count_meta = count_meta + 1;
-            previous_participant = current_participant;
         end
         count_trial_bis = count_trial_bis + 1;
+        previous_participant = current_participant;
     end
 
     % for trial = 1:total_num_trials
