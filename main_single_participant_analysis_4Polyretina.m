@@ -26,9 +26,8 @@ if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
-%subject_inds = [1, 2, 3, 6, 7, 8, 9];
-%subject_inds = 6;
-subject_inds = [1, 2, 3, 6];
+% subject_inds = 8;
+subject_inds = [1, 2, 3, 6, 8];
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
@@ -253,6 +252,46 @@ EEG_absolute_base_spectrum_45_std_dB = 10*log10(EEG_absolute_base_spectrum_45_st
 inBetween_absolute_baseline_20_dB = 10*log10(inBetween_absolute_baseline_20);
 inBetween_absolute_baseline_45_dB = 10*log10(inBetween_absolute_baseline_45);
 
+EEG_absolute_coarse_spectrum_black_averaged_dB = 10*log10(EEG_absolute_coarse_spectrum_black_averaged);
+EEG_absolute_coarse_spectrum_edge_averaged_dB = 10*log10(EEG_absolute_coarse_spectrum_edge_averaged);
+EEG_absolute_coarse_spectrum_black_std_dB = 10*log10(EEG_absolute_coarse_spectrum_black_std);
+EEG_absolute_coarse_spectrum_edge_std_dB = 10*log10(EEG_absolute_coarse_spectrum_edge_std);
+inBetween_absolute_coarse_black_dB = 10*log10(inBetween_absolute_coarse_black);
+inBetween_absolute_coarse_edge_dB = 10*log10(inBetween_absolute_coarse_edge);
+
+
+
+
+
+
+% PLOT TEST FOR COARSE BASELINES
+
+% 4. Define colors:
+color_black = [0, 0, 0]; % Black color for black baseline
+color_edge = [0.8, 0.4, 0.0]; % Edge color for edge baseline
+
+% 5. Plot absolute spectra for black and edge baselines:
+figure;
+plot(freqs_of_interest, squeeze(EEG_absolute_coarse_spectrum_black_averaged_dB), 'Color', color_black, 'LineWidth', 2);
+hold on;
+plot(freqs_of_interest, squeeze(EEG_absolute_coarse_spectrum_edge_averaged_dB), 'Color', color_edge, 'LineWidth', 2);
+
+% 6. Add standard deviation (optional):
+if plot_std
+    % Assuming `inBetween_absolute_coarse_black` and `inBetween_absolute_coarse_edge` are defined
+    patch('XData', [freqs_of_interest(:); flipud(freqs_of_interest(:))], 'YData', inBetween_absolute_coarse_black_dB, ...
+          'FaceColor', color_black, 'EdgeColor', color_black, 'FaceAlpha', 0.2);
+    patch('XData', [freqs_of_interest(:); flipud(freqs_of_interest(:))], 'YData', inBetween_absolute_coarse_edge_dB, ...
+          'FaceColor', color_edge, 'EdgeColor', color_edge, 'FaceAlpha', 0.2);
+end
+
+% 7. Finalize plot:
+hold off;
+grid on;
+xlabel('Frequencies [Hz]');
+ylabel('Power [dB]');
+legend('Black Baseline', 'Edge Baseline');
+title('Absolute Spectrum for Brain Region Electrodes Across FoV');
 
 
 

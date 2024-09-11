@@ -19,9 +19,9 @@ function [EEG_selected_spectrum_FoV] = extract_trials_according_to_brainregion_a
 
 % 1. Defining  structures needed and other need variables
 EEG_selected_spectrum_FoV = [];
-kept_participant_id = [];
-kept_trial_id = [];
-kept_field_of_view = [];
+% kept_participant_id = [];
+% kept_trial_id = [];
+% kept_field_of_view = [];
 % kept_auditory_cue = [];
 % kept_auditory_answer = [];
 
