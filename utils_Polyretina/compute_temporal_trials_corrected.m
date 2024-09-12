@@ -1,157 +1,31 @@
-function [EEG_selected_spectrum_FoV] = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, electrodes_of_interest, bool_corrected)
+function [corrected_trials] = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, electrodes_of_interest, bool_corrected)
 
 
 
+corrected_trials = struct();
+participant_ids = unique({EEG_baseline_data.metaInfo.participant_id});
 
-baseline_means = struct();
-participant_ids = unique([EEG_baseline_data.metaInfo.participant_id]);
-
-for i = 1:length(participant_ids)    
-    participant_data = EEG_baseline_data.(participant_ids(i)).data2sec;
-    mean_baseline = mean(participant_data, 2);  % Average across time points (dimension 2)
-    baseline_means.(participant_ids(i)) = mean_baseline;
-end
-
-
-
-
-
-
-
-% Step 1: Precompute the baseline mean for each block
-
-baseline_means = struct();
-
-for participant = 1:num_participants
-    participant_id = EEG_baseline_data.metaInfo(participant).participant_id;
+for i = 1:length(participant_ids)
+    participant_id = participant_ids{i};
     
-    % Initialize a structure to store baseline means for each block of this participant
-    baseline_means.(participant_id) = struct();
+    participant_baseline_data = EEG_baseline_data.(participant_id).data2sec;
+    mean_baseline = mean(participant_baseline_data, 2);  % Average across time points (dimension 2)
     
-    % Loop through each block to compute the mean baseline for that block
-    blocks = unique([EEG_baseline_data.metaInfo.BlockIndex]);
+    trial_data = EEG_trial_data.(participant_id).data2sec;
+    corrected_data = zeros(size(trial_data));
+    num_trials = size(trial_data, 3);
     
-    for block = blocks
-        % Get the baseline data for the current block
-        baseline_trials = EEG_baseline_data.(participant_id).data(:,:, EEG_baseline_data.metaInfo.BlockIndex == block);
-        
-        % Compute the mean baseline across all electrodes and time points for this block
-        mean_baseline = mean(baseline_trials, 3);  % Average across time points and electrodes
-        baseline_means.(participant_id).(['block_' num2str(block)]) = mean_baseline;
-    end
-end
-
-% Step 2: Use the precomputed baseline means to normalize the trials
-
-EEG_corrected_trials = struct();
-
-for participant = 1:num_participants
-    participant_id = EEG_trial_data.metaInfo(participant).participant_id;
-    
-    % Loop through each trial for this participant
     for trial = 1:num_trials
-        block_idx = EEG_trial_data.metaInfo(trial).BlockIndex;
-        
-        % Retrieve the precomputed baseline mean for this block
-        mean_baseline = baseline_means.(participant_id).(['block_' num2str(block_idx)]);
-        
-        % Normalize the current trial using the mean baseline for this block
-        trial_data = EEG_trial_data.(participant_id).data(:,:,trial);
-        corrected_trial = trial_data - mean_baseline;
-        
-        % Store the corrected trial
-        EEG_corrected_trials.(participant_id).data(:,:,trial) = corrected_trial;
+        baseline_index = ceil(trial / 2);  % Use the same baseline for every two consecutive trials
+        corrected_data(:, :, trial) = trial_data(:, :, trial) - mean_baseline(:, baseline_index);
     end
+    corrected_trials.(participant_id).corrected_data2sec = corrected_data;
 end
 
+corrected_trials.metaInfo = EEG_trial_data.metaInfo;
 
 
-
-
-
-
-
-
-
-
-
-
-EEG_selected_spectrum_FoV = [];
-
-total_num_trials = size({EEG_relative_spectrum.metaInfo.participant_id},2);
-
-% Defining variables to know if we moved onto another participant
-previous_participant = EEG_relative_spectrum.metaInfo(1).participant_id;
-count_trial = 1;
-count_trial_bis = 1;
-count_meta = 1;
-
-if bool_divide_by_FoV %  TRIALS AND BASELINE
-    disp(['Keeping only trials of interst for FoV: ' num2str(wanted_FoV) '...'])
-    % 2. Loop over all the trials to keep only with field of view of interest
-    for trial = 1:total_num_trials
-
-        % Seeing if we moved onto next participant
-        current_participant = EEG_relative_spectrum.metaInfo(trial).participant_id;
-        if ~strcmp(current_participant, previous_participant)
-            count_trial = 1;
-            count_trial_bis=1;
-        end
-
-        % Check if the field of view is the one wanted
-        current_FoV = EEG_relative_spectrum.metaInfo(trial).FieldOfView;
-        if current_FoV == wanted_FoV
-
-            trial_id = EEG_relative_spectrum.metaInfo(trial).TrialIndex;
-
-            % Saving spectrum and related information for that
-            % participant/trial
-            EEG_selected_spectrum_FoV.(current_participant).srate = EEG_relative_spectrum.(current_participant).srate;
-            EEG_selected_spectrum_FoV.(current_participant).chanlocs = EEG_relative_spectrum.(current_participant).chanlocs;
-            EEG_selected_spectrum_FoV.(current_participant).freqs = EEG_relative_spectrum.(current_participant).freqs;
-
-            switch absolute_or_relative
-                case 'absolute'
-                    EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).spectrum(:,:,count_trial_bis); % POL : before, trial_idx
-                % case 'relative'
-                %     EEG_selected_spectrum_FoV.(current_participant).relative_spectrum(:,:,count_trial) = EEG_relative_spectrum.(current_participant).relative_spectrum(:,:,count_trial_bis); % POL : before, trial_idx
-                % otherwise
-                %     error('Type of spectra computed incorrect: type either "absolute" or "relative"');
-            end
-
-            EEG_selected_spectrum_FoV.metaInfo(count_meta).participant_id = current_participant;
-            EEG_selected_spectrum_FoV.metaInfo(count_meta).TrialIndex = trial_id;
-            EEG_selected_spectrum_FoV.metaInfo(count_meta).FieldOfView = current_FoV;
-            
-            % Updating counting variables
-            count_trial = count_trial + 1;
-            count_meta = count_meta + 1;
-        end
-        previous_participant = current_participant;
-        count_trial_bis = count_trial_bis + 1;
-    end
-    
-else
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+% SELECTING ELECTRODES OF INTEREST
 disp('Keeping only electrodes of brain region of interest...')
 if ischar(electrodes_of_interest)
     if strcmp(electrodes_of_interest, 'all')
@@ -160,16 +34,210 @@ if ischar(electrodes_of_interest)
         error('Please enter correct option')
     end
 else
-    % Looping over all participants
-    for p = 1:length(participants)
-        % Retrieving chanlocs information for that participant (its the same across all participants but still computed out of precaution...)
-        chanlocs = EEG_selected_spectrum_FoV.(current_participant).chanlocs;
+    for p = 1:length(participant_ids)
+        chanlocs = EEG_trial_data.(participant_ids{p}).chanlocs;
 
         % Retrieve the indices that correspond to electrodes that we don't want to keep
-        OoI_electrode_indices = find(~ismember({chanlocs.labels}, electrodes_of_interest));
+        idx = find(~ismember({chanlocs.labels}, electrodes_of_interest));
 
         % Removing all data from electrodes that are out of interst (OoI)
-        EEG_selected_spectrum_FoV.(participants{p}).relative_spectrum(OoI_electrode_indices,:,:) = [];
-
+        corrected_trials.(participant_ids{p}).corrected_data2sec(idx,:,:) = [];
     end
 end
+
+
+
+
+% SPEARATE 20 AND 45, COMPUTE MEAN AND STD
+trials_20 = struct();
+trials_45 = struct();
+mean_trials_20 = [];
+mean_trials_45 = [];
+
+for p = 1:length(participant_ids)
+    participant_id = participant_ids{p};
+
+    participant_meta_indices = find(strcmp({corrected_trials.metaInfo.participant_id}, participant_id));
+    participant_meta_info = corrected_trials.metaInfo(participant_meta_indices);
+    %meta_info = corrected_trials.metaInfo;
+
+    trial_data = corrected_trials.(participant_id).corrected_data2sec;
+    
+    trials_20_indices = find([participant_meta_info.FieldOfView] == 20);
+    trials_45_indices = find([participant_meta_info.FieldOfView] == 45);
+    
+    trials_20_data = trial_data(:, :, trials_20_indices);
+    trials_45_data = trial_data(:, :, trials_45_indices);
+
+    trials_20.(participant_id) = squeeze(mean(trials_20_data, 1));  % Average over electrodes (dimension 1)
+    trials_45.(participant_id) = squeeze(mean(trials_45_data, 1));  % Average over electrodes (dimension 1)
+end
+
+
+for p = 1:length(participant_ids)
+    participant_id = participant_ids{p};
+    
+    mean_trials_20_participant = mean(trials_20.(participant_id), 2); % Mean across trials (dimension 2)
+    mean_trials_20 = cat(2, mean_trials_20, mean_trials_20_participant); % Stack participants
+    
+    mean_trials_45_participant = mean(trials_45.(participant_id), 2); % Mean across trials (dimension 2)
+    mean_trials_45 = cat(2, mean_trials_45, mean_trials_45_participant); % Stack participants
+end
+
+mean_20_all_participants = mean(mean_trials_20, 2); % Mean across participants (dimension 2)
+std_20_all_participants = std(mean_trials_20, 0, 2); % Std across participants (dimension 2)
+mean_45_all_participants = mean(mean_trials_45, 2); 
+std_45_all_participants = std(mean_trials_45, 0, 2);
+
+corrected_trials.mean_20_all_participants = mean_20_all_participants;
+corrected_trials.std_20_all_participants = std_20_all_participants;
+corrected_trials.mean_45_all_participants = mean_45_all_participants;
+corrected_trials.std_45_all_participants = std_45_all_participants;
+
+
+
+
+
+
+
+
+% PLOT MEAN 45 AND 20 WITH STD
+color_20 = [0.1, 0.6, 0.8]; % Color for 20° trials
+color_45 = [0.8, 0.4, 0.0]; % Color for 45° trials
+
+time_points = linspace(0, 2, size(mean_20_all_participants, 1)); 
+figure;
+hold on;
+
+h1 = plot(time_points, mean_20_all_participants, 'Color', color_20, 'LineWidth', 2); % Store handle for legend
+patch('XData', [time_points, fliplr(time_points)], ...
+      'YData', [mean_20_all_participants - std_20_all_participants; ...
+                flipud(mean_20_all_participants + std_20_all_participants)], ...
+      'FaceColor', color_20, 'EdgeColor', 'none', 'FaceAlpha', 0.2);
+
+h2 = plot(time_points, mean_45_all_participants, 'Color', color_45, 'LineWidth', 2); % Store handle for legend
+patch('XData', [time_points, fliplr(time_points)], ...
+      'YData', [mean_45_all_participants - std_45_all_participants; ...
+                flipud(mean_45_all_participants + std_45_all_participants)], ...
+      'FaceColor', color_45, 'EdgeColor', 'none', 'FaceAlpha', 0.2);
+
+xlabel('Time (s)');
+ylabel('Amplitude');
+legend([h1, h2], {'20° Trials', '45° Trials'}); % Use plot handles for correct legend
+title('Mean and STD of EEG Trials (20° vs 45°)');
+grid on;
+hold off;
+
+
+
+
+
+
+
+
+
+
+% PLOT FOR 20° TRIALS (5 participants)
+figure;
+hold on;
+color_order = lines(size(mean_trials_20, 2)); % Generate colors for each participant
+
+for p = 1:size(mean_trials_20, 2)
+    plot(time_points, mean_trials_20(:, p), 'Color', color_order(p, :), 'LineWidth', 2);
+end
+
+xlabel('Time (s)');
+ylabel('Amplitude');
+legend(participant_ids, 'Location', 'best');
+title('Mean Trials (20°) for Each Participant');
+grid on;
+hold off;
+
+
+% PLOT FOR 45° TRIALS (5 participants)
+figure;
+hold on;
+
+for p = 1:size(mean_trials_45, 2)
+    plot(time_points, mean_trials_45(:, p), 'Color', color_order(p, :), 'LineWidth', 2);
+end
+
+xlabel('Time (s)');
+ylabel('Amplitude');
+legend(participant_ids, 'Location', 'best');
+title('Mean Trials (45°) for Each Participant');
+grid on;
+hold off;
+
+
+
+
+
+
+
+% Assumons que srate est la fréquence d'échantillonnage des données EEG
+srate = EEG_baseline_data.P001.srate;
+
+n_samples = 500; % Nombre d'échantillons ajustés
+mean_20_adjusted = mean_20_all_participants(1:n_samples);
+mean_45_adjusted = mean_45_all_participants(1:n_samples);
+
+window_size = round(0.25 * srate); % Taille de la fenêtre en échantillons
+overlap_size = round(0.125 * srate); % Chevauchement de 50%
+
+[s_20, f_20, t_20] = spectrogram(mean_20_adjusted, hamming(window_size), overlap_size, [], srate, 'yaxis');
+S_20_dB = 10*log10(abs(s_20));
+
+[s_45, f_45, t_45] = spectrogram(mean_45_adjusted, hamming(window_size), overlap_size, [], srate, 'yaxis');
+S_45_dB = 10*log10(abs(s_45));
+
+diff_spectrogram = S_20_dB - S_45_dB;
+
+% Plot
+figure;
+
+% Spectrogramme pour 20° trials
+subplot(3,1,1);
+imagesc(t_20, f_20, S_20_dB);
+axis xy;
+ylim([0 45]); % Limite de 0 à 45 Hz
+title('Spectrogram for 20° Trials');
+colorbar;
+xlabel('Time (s)');
+ylabel('Frequency (Hz)');
+
+% Spectrogramme pour 45° trials
+subplot(3,1,2);
+imagesc(t_45, f_45, S_45_dB);
+axis xy;
+ylim([0 45]); % Limite de 0 à 45 Hz
+title('Spectrogram for 45° Trials');
+colorbar;
+xlabel('Time (s)');
+ylabel('Frequency (Hz)');
+
+% Différence entre les spectrogrammes
+subplot(3,1,3);
+imagesc(t_20, f_20, diff_spectrogram);
+axis xy;
+ylim([0 45]); % Limite de 0 à 45 Hz
+title('Difference between 20° and 45° Trials');
+colorbar;
+xlabel('Time (s)');
+ylabel('Frequency (Hz)');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+return

@@ -260,7 +260,7 @@ inBetween_absolute_coarse_black_dB = 10*log10(inBetween_absolute_coarse_black);
 inBetween_absolute_coarse_edge_dB = 10*log10(inBetween_absolute_coarse_edge);
 
 
-
+freqs_of_interest = EEG_selected_absolute_spectrum_20_all_trials.freqs;
 
 
 
@@ -292,6 +292,29 @@ xlabel('Frequencies [Hz]');
 ylabel('Power [dB]');
 legend('Black Baseline', 'Edge Baseline');
 title('Absolute Spectrum for Brain Region Electrodes Across FoV');
+
+
+
+
+
+
+
+
+
+
+
+
+
+%% SHORT DURATION ANALYSIS (LAST 2 SECONDS OF TRIALS)
+
+EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, 1);
+
+
+
+
+
+
+
 
 
 
