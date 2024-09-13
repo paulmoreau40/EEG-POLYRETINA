@@ -8,10 +8,9 @@ function [data_heatmap_conditionvbase] = format_for_heatmap_conditionvbaseline(c
 % Retrieving values of spectrum and baseline averaged over all participants
 spectrum_trial_averaged = mean(spectrum_trial, 3);
 spectrum_baseline_averaged = mean(spectrum_baseline, 3);
-% Transforming them in decibel: 
 spectrum_trial_averaged_dB = 10*log10(spectrum_trial_averaged);
 spectrum_baseline_averaged_dB = 10*log10(spectrum_baseline_averaged);
-% Taking the difference in dB
+
 spectrum_relative_averaged_dB = spectrum_trial_averaged_dB - spectrum_baseline_averaged_dB;
 
 % 2. Setting all of the non_statistically_significant clusters to 0 and

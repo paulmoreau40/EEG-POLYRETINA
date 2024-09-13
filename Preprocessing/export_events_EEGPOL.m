@@ -56,14 +56,14 @@ iTrial = 1;
 % handle subject P006 missing lot of events at beginning
 subject = cfg.subjects(cfg.current_subject).id;
 
-if strcmp(subject, 'P005')
-    trialType = {"Angle20"};
-end
-
-% TEST TO ONLY KEEP ESSAI 1 of P009, bug après ?
-if strcmp(subject, 'P009')
-    events_count = 291;
-end
+% if strcmp(subject, 'P005')
+%     trialType = {"Angle20"};
+% end
+% 
+% % TEST TO ONLY KEEP ESSAI 1 of P009, bug après ?
+% if strcmp(subject, 'P009')
+%     events_count = 291;
+% end
 
 
 
@@ -156,9 +156,9 @@ tbl.DurationComputed = [diff(tbl.Time); 0];
 
 
 
-if strcmp(subject, 'P009')
-    tbl(349:end,:) = [];
-end
+% if strcmp(subject, 'P009')
+%     tbl(349:end,:) = [];
+% end
 
 
 
@@ -181,6 +181,36 @@ for i=1:height(tbl)
     end 
 end
 tbl.NewDurationComputed = [diff(tbl.Time); 0]; % just to visually verify
+
+
+
+
+
+% ADD THE EDGE COARSE BASELINE AFTER EACH BLACK COARSE BASELINE
+BaseCoarse_idx = find(strcmp(tbl.Name,'BaselineCoarseStart'));
+old_tbl = tbl;
+
+for i=length(BaseCoarse_idx):-1:1
+    edgeStart  = old_tbl(BaseCoarse_idx(i)+1,:);
+    edgeStart.Time = edgeStart.Time + 0.01;
+    edgeStart.RawName = {'Start c_baseline'};
+    edgeStart.Name = {'BaselineCoarseStart'};
+    edgeStart.TrialType = {['Baseline']};
+    edgeStart.Latency = edgeStart.Latency + 1;
+    
+    edgeEnd = old_tbl(BaseCoarse_idx(i)+2,:);
+    edgeEnd.Time = edgeEnd.Time - 0.01;
+    edgeEnd.RawName = {'End c_baseline'};
+    edgeEnd.Name = {'BaselineCoarseEnd'};
+    edgeEnd.TrialType = {['Baseline']};
+    edgeEnd.Latency = edgeEnd.Latency - 1;
+    edgeEnd.BlockIndex = 0;
+    edgeEnd.TrialIndex = 0;
+
+    tbl = [tbl(1:BaseCoarse_idx(i)+1, :); edgeStart ; edgeEnd; tbl(BaseCoarse_idx(i)+2:end, :)];
+end
+
+
 
 
 
