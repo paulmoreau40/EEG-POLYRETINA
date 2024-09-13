@@ -175,9 +175,7 @@ hold off;
 
 
 
-% Assumons que srate est la fréquence d'échantillonnage des données EEG
 srate = EEG_baseline_data.P001.srate;
-
 n_samples = 500; % Nombre d'échantillons ajustés
 mean_20_adjusted = mean_20_all_participants(1:n_samples);
 mean_45_adjusted = mean_45_all_participants(1:n_samples);
@@ -228,6 +226,54 @@ ylabel('Frequency (Hz)');
 
 
 
+
+
+
+
+
+% MEAN AND STD OF ALL TRIALS ACROSS ALL PARTICIPANTS
+all_trials_20 = [];
+all_trials_45 = [];
+
+for i = 1:length(participant_ids)
+    participant_id = participant_ids{i};
+    
+    participant_data_20 = trials_20.(participant_id); 
+    participant_data_45 = trials_45.(participant_id); 
+    
+    all_trials_20 = cat(2, all_trials_20, participant_data_20); 
+    all_trials_45 = cat(2, all_trials_45, participant_data_45); 
+end
+
+mean_20 = mean(all_trials_20, 2); 
+std_20 = std(all_trials_20, [], 2);
+
+mean_45 = mean(all_trials_45, 2);
+std_45 = std(all_trials_45, [], 2);
+
+time_points = linspace(0, 2, size(mean_20, 1));
+color_20 = [0.1, 0.6, 0.8]; % Couleur pour les trials à 20°
+color_45 = [0.8, 0.4, 0.0]; % Couleur pour les trials à 45°
+
+figure;
+hold on;
+
+plot(time_points, mean_20, 'Color', color_20, 'LineWidth', 2);
+patch('XData', [time_points, fliplr(time_points)], ...
+      'YData', [mean_20 - std_20; flipud(mean_20 + std_20)], ...
+      'FaceColor', color_20, 'EdgeColor', 'none', 'FaceAlpha', 0.2);
+
+plot(time_points, mean_45, 'Color', color_45, 'LineWidth', 2);
+patch('XData', [time_points, fliplr(time_points)], ...
+      'YData', [mean_45 - std_45; flipud(mean_45 + std_45)], ...
+      'FaceColor', color_45, 'EdgeColor', 'none', 'FaceAlpha', 0.2);
+
+xlabel('Time (s)');
+ylabel('Amplitude');
+legend({'20° Trials', '20° Trials (Std)', '45° Trials', '45° Trials (Std)'});
+title('Mean and STD of Concatenated EEG Trials (20° vs 45°)');
+grid on;
+hold off;
 
 
 
