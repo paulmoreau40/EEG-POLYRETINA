@@ -61,9 +61,9 @@ subject = cfg.subjects(cfg.current_subject).id;
 % end
 % 
 % % TEST TO ONLY KEEP ESSAI 1 of P009, bug après ?
-% if strcmp(subject, 'P009')
-%     events_count = 291;
-% end
+if strcmp(subject, 'P009')
+    events_count = 291;
+end
 
 
 

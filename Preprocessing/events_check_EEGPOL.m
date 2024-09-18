@@ -31,6 +31,12 @@ Angle45_perc = nan(n_Trials,1);
 
 % COARSE BASELINE EXTRACTION
 n_c_base = 4;
+
+subject = cfg.subjects(cfg.current_subject).id;
+if strcmp(subject, 'P009') % strcmp(subject, 'P007') || 
+    n_c_base = 2;
+end 
+
 BaseCoarse_idx = find(strcmp({evts_noBounds.type},'BaselineCoarseStart'));
 if length(BaseCoarse_idx) ~= n_c_base
     error('Did not find 2 coarse baselines')
