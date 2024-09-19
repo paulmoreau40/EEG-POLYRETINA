@@ -26,8 +26,8 @@ if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
-% subject_inds = 8;
-subject_inds = [1, 2, 3, 6, 8];
+subject_inds = 7;
+% subject_inds = [1, 2, 3, 6, 8];
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)

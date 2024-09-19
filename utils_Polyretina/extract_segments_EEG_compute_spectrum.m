@@ -31,9 +31,9 @@ if ismember(participant_id,'P008')
     events(374).latency = events(374).latency +700;
 end
 
-% if ismember(participant_id,'P007')
-%     events(43).latency = 72833; % baseline -> 859 samples (instead of 76)
-% end
+if ismember(participant_id,'P007')
+    events(47).latency = 75546; % baseline -> 859 samples (instead of 76)
+end
 
 
 

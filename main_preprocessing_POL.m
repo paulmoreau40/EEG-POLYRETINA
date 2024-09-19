@@ -32,7 +32,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 8;
+    subject_ind = 9;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);

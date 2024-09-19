@@ -156,9 +156,9 @@ tbl.DurationComputed = [diff(tbl.Time); 0];
 
 
 
-% if strcmp(subject, 'P009')
-%     tbl(349:end,:) = [];
-% end
+if strcmp(subject, 'P009')
+    tbl(349:end,:) = [];
+end
 
 
 

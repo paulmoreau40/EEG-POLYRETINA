@@ -48,7 +48,7 @@ end
 
 
 
-% SPEARATE 20 AND 45, COMPUTE MEAN AND STD
+% SEPARATE 20 AND 45
 trials_20 = struct();
 trials_45 = struct();
 mean_trials_20 = [];
@@ -73,7 +73,7 @@ for p = 1:length(participant_ids)
     trials_45.(participant_id) = squeeze(mean(trials_45_data, 1));  % Average over electrodes (dimension 1)
 end
 
-
+% COMPUTE MEAN AND STD
 for p = 1:length(participant_ids)
     participant_id = participant_ids{p};
     
@@ -226,7 +226,7 @@ hold off;
 
 % SPECTROGRAM ANALYSIS AND PLOT
 
-srate = EEG_baseline_data.P001.srate;
+srate = EEG_baseline_data.(participant_ids{1}).srate;
 n_samples = 500; % Nombre d'échantillons ajustés
 mean_20_adjusted = mean_20_all_participants(1:n_samples);
 mean_45_adjusted = mean_45_all_participants(1:n_samples);
@@ -283,7 +283,6 @@ ylabel('Frequency (Hz)');
 % MEAN OF SPECTROGRAMS OF EACH TRIAL
 
 % Paramètres
-srate = EEG_baseline_data.P001.srate;
 window_size = round(0.25 * srate);  % Fenêtre de 0.25 seconde
 overlap_size = round(0.125 * srate);  % Chevauchement de 50%
 
