@@ -5,10 +5,10 @@ n_Trials = 210;
 n_Blocks = 70;
 blockLength = floor(n_Trials/n_Blocks);
 
-% subject = cfg.subjects(cfg.current_subject).id;
-% if strcmp(subject, 'P009')
-%     n_Trials = 165;
-% end
+subject = cfg.subjects(cfg.current_subject).id;
+if strcmp(subject, 'P009')
+    n_Trials = 165;
+end
 
 
 events = EEG.event;
@@ -145,27 +145,36 @@ for cb=1:length(BaseCoarse_idx)
     end
 end
 
-% Combine coarse baseline data with existing trial data
-% BlockInd = [0; BlockInd; 0];
-% TrialInd = [0; TrialInd; 0];
-% TrialType = ['CoarseBaseline'; TrialType;'CoarseBaseline'];
-% Trial_urevent_seq = [coarse_urevent_seq(1, :); Trial_urevent_seq; coarse_urevent_seq(2, :)];
-% Trial_perc = [coarse_perc(1); Trial_perc; coarse_perc(2)];
-% Baseline_perc = [coarse_perc(1); Baseline_perc; coarse_perc(2)];
-% Angle20_perc = [nan; Angle20_perc; nan];
-% Angle45_perc = [nan; Angle45_perc; nan];
-% MaxBufferPre = [coarseMaxBufferPre(1); MaxBufferPre; coarseMaxBufferPre(2)];
-% MaxBufferPost = [coarseMaxBufferPost(1); MaxBufferPost; coarseMaxBufferPost(2)];
-BlockInd = [zeros(n_c_base/2, 1); BlockInd; zeros(n_c_base/2, 1)];
-TrialInd = [zeros(n_c_base/2, 1); TrialInd; zeros(n_c_base/2, 1)];
-TrialType = [repmat({'CoarseBaseline'}, n_c_base/2, 1); TrialType; repmat({'CoarseBaseline'}, n_c_base/2, 1)];
-Trial_urevent_seq = [coarse_urevent_seq(1:n_c_base/2, :); Trial_urevent_seq; coarse_urevent_seq(end-n_c_base/2+1:end, :)];
-Trial_perc = [coarse_perc(1:n_c_base/2); Trial_perc; coarse_perc(end-n_c_base/2+1:end)];
-Baseline_perc = [coarse_perc(1:n_c_base/2); Baseline_perc; coarse_perc(end-n_c_base/2+1:end)];
-Angle20_perc = [nan(n_c_base/2, 1); Angle20_perc; nan(n_c_base/2, 1)];
-Angle45_perc = [nan(n_c_base/2, 1); Angle45_perc; nan(n_c_base/2, 1)];
-MaxBufferPre = [coarseMaxBufferPre(1:n_c_base/2); MaxBufferPre; coarseMaxBufferPre(end-n_c_base/2+1:end)];
-MaxBufferPost = [coarseMaxBufferPost(1:n_c_base/2); MaxBufferPost; coarseMaxBufferPost(end-n_c_base/2+1:end)];
+% BlockInd = [zeros(n_c_base/2, 1); BlockInd; zeros(n_c_base/2, 1)];
+% TrialInd = [zeros(n_c_base/2, 1); TrialInd; zeros(n_c_base/2, 1)];
+% TrialType = [repmat({'CoarseBaseline'}, n_c_base/2, 1); TrialType; repmat({'CoarseBaseline'}, n_c_base/2, 1)];
+% Trial_urevent_seq = [coarse_urevent_seq(1:n_c_base/2, :); Trial_urevent_seq; coarse_urevent_seq(end-n_c_base/2+1:end, :)];
+% Trial_perc = [coarse_perc(1:n_c_base/2); Trial_perc; coarse_perc(end-n_c_base/2+1:end)];
+% Baseline_perc = [coarse_perc(1:n_c_base/2); Baseline_perc; coarse_perc(end-n_c_base/2+1:end)];
+% Angle20_perc = [nan(n_c_base/2, 1); Angle20_perc; nan(n_c_base/2, 1)];
+% Angle45_perc = [nan(n_c_base/2, 1); Angle45_perc; nan(n_c_base/2, 1)];
+% MaxBufferPre = [coarseMaxBufferPre(1:n_c_base/2); MaxBufferPre; coarseMaxBufferPre(end-n_c_base/2+1:end)];
+% MaxBufferPost = [coarseMaxBufferPost(1:n_c_base/2); MaxBufferPost; coarseMaxBufferPost(end-n_c_base/2+1:end)];
+
+if strcmp(subject, 'P009')
+    baseline_before = n_c_base; % Seulement avant pour 'P009'
+    baseline_after = 0;
+else
+    baseline_before = n_c_base/2; % Baseline avant et après pour les autres
+    baseline_after = n_c_base/2;
+end
+
+% Ajout des données selon le cas
+BlockInd = [zeros(baseline_before, 1); BlockInd; zeros(baseline_after, 1)];
+TrialInd = [zeros(baseline_before, 1); TrialInd; zeros(baseline_after, 1)];
+TrialType = [repmat({'CoarseBaseline'}, baseline_before, 1); TrialType; repmat({'CoarseBaseline'}, baseline_after, 1)];
+Trial_urevent_seq = [coarse_urevent_seq(1:baseline_before, :); Trial_urevent_seq; coarse_urevent_seq(end-baseline_after+1:end, :)];
+Trial_perc = [coarse_perc(1:baseline_before); Trial_perc; coarse_perc(end-baseline_after+1:end)];
+Baseline_perc = [coarse_perc(1:baseline_before); Baseline_perc; coarse_perc(end-baseline_after+1:end)];
+Angle20_perc = [nan(baseline_before, 1); Angle20_perc; nan(baseline_after, 1)];
+Angle45_perc = [nan(baseline_before, 1); Angle45_perc; nan(baseline_after, 1)];
+MaxBufferPre = [coarseMaxBufferPre(1:baseline_before); MaxBufferPre; coarseMaxBufferPre(end-baseline_after+1:end)];
+MaxBufferPost = [coarseMaxBufferPost(1:baseline_before); MaxBufferPost; coarseMaxBufferPost(end-baseline_after+1:end)];
 
 
 

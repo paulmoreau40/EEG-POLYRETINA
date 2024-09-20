@@ -13,7 +13,7 @@ for i = 1:length(participant_ids)
     
     trial_data = EEG_trial_data.(participant_id).data2sec;
     corrected_data = zeros(size(trial_data));
-    num_trials = size(trial_data, 3);
+    num_trials = size(trial_data, 3); 
     
     for trial = 1:num_trials
         baseline_index = ceil(trial / 2);  % Use the same baseline for every two consecutive trials

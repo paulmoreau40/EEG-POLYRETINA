@@ -26,7 +26,7 @@ if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
-subject_inds = 7;
+subject_inds = 9;
 % subject_inds = [1, 2, 3, 6, 8];
 
 % Checking if computing the spectra has already been done
@@ -299,32 +299,6 @@ title('Absolute Spectrum for Brain Region Electrodes Across FoV');
 
 
 
-
-
-
-
-
-
-%% SHORT DURATION ANALYSIS (LAST 2 SECONDS OF TRIALS)
-
-EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, 1);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 %% 7. Making plots for Absolute Spectra
 
 % 7.1. Defining variables of interest for plots:
@@ -560,6 +534,39 @@ if strcmp(plot_scale, 'dB')
 %     end
 end
     
+
+
+
+
+
+
+
+
+
+
+
+%% SHORT DURATION ANALYSIS (LAST 2 SECONDS OF TRIALS)
+
+EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, 1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 % % % % % % % %% 8. Computing the relative Spectrum and Plotting them
 % % % % % % % 
 % % % % % % % % 8.0. Computing EEG Relative Spectrum structure: Rectify Trials with Baseline (Relative Power)
