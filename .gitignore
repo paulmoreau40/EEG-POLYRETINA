@@ -1,9 +1,8 @@
 **\*.asv
 **/*.asv
 *.asv
-*.asv
-*.asv
-*.asv
 *.jpg
 *.mat
 *.txt
+/myenv
+/venv
