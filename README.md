@@ -7,6 +7,43 @@ This repository contains an EEG analysis pipeline developed for investigating th
 
 ## **3. Installation**
 
+Follow these steps to set up the project environment:
+
+### Clone the Repository
+To start, clone the repository to your local machine:
+
+```console
+git clone https://github.com/paulmoreau40/EEG-POLYRETINA.git && cd EEG-POLYRETINA
+```
+
+### Create a Virtual Environment
+To create a virtual environment, run the following command:
+
+```console
+python -m venv polyretina
+```
+
+### Activate the Virtual Environment
+Activate the virtual environment using one of the following commands based on your operating system:
+
+**Windows:**
+```console
+.\polyretina\Scripts\activate
+```
+**Linux / Mac:**
+```console
+source polyretina/bin/activate
+```
+
+### Install Dependencies
+Next, install the necessary dependencies by running:
+
+```console
+pip install -r requirements.txt
+```
+
+
+
 ## **4. Usage**
 
 ## **5. Project Structure**
