@@ -32,7 +32,7 @@ for subject_ind = subject_inds
     %STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
     % Overwrite subject for testing (COMMENT / DECOMMENT)
-    subject_ind = 9;
+    subject_ind = 7;
 
     subject = study_config.subjects(subject_ind).id;
     disp(['Subject ' subject]);
@@ -213,6 +213,9 @@ for subject_ind = subject_inds
     
     if study_config.doDipoleFitting
         if ~skipDipoles && (~exist([N.searchFolder_2arch_rej N.dipfitFile],'file') || overwriteDipoles)
+
+            % CURRENT PARAMETERS TUNED : pitch 0.4, roll 0, yaw 4.7
+
             % HP filter
             lowcutoff = study_config.filterICLabel.low_cut_off;
             highcutoff = study_config.filterICLabel.high_cut_off;

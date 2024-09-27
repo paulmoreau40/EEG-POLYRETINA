@@ -1,4 +1,4 @@
-function [corrected_trials] = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, electrodes_of_interest, bool_corrected)
+function [corrected_trials] = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, electrodes_of_interest, bool_corrected, bool_all_electrodes)
 
 
 
@@ -15,6 +15,11 @@ for i = 1:length(participant_ids)
     corrected_data = zeros(size(trial_data));
     num_trials = size(trial_data, 3); 
     
+    if ismember(participant_id,'P009')
+        num_trials = 72;
+        corrected_data(:,:,73:end) = [];
+    end
+
     for trial = 1:num_trials
         baseline_index = ceil(trial / 2);  % Use the same baseline for every two consecutive trials
         corrected_data(:, :, trial) = trial_data(:, :, trial) - mean_baseline(:, baseline_index);
@@ -23,28 +28,29 @@ for i = 1:length(participant_ids)
 end
 
 corrected_trials.metaInfo = EEG_trial_data.metaInfo;
+corrected_trials.metaInfo(strcmp({corrected_trials.metaInfo.participant_id}, 'P009') & [corrected_trials.metaInfo.BlockIndex] == 37) = [];
 
-
-% SELECTING ELECTRODES OF INTEREST
-disp('Keeping only electrodes of brain region of interest...')
-if ischar(electrodes_of_interest)
-    if strcmp(electrodes_of_interest, 'all')
-        disp('Keeping all of the electrodes...')
+if ~bool_all_electrodes
+    % SELECTING ELECTRODES OF INTEREST
+    disp('Keeping only electrodes of brain region of interest...')
+    if ischar(electrodes_of_interest)
+        if strcmp(electrodes_of_interest, 'all')
+            disp('Keeping all of the electrodes...')
+        else
+            error('Please enter correct option')
+        end
     else
-        error('Please enter correct option')
-    end
-else
-    for p = 1:length(participant_ids)
-        chanlocs = EEG_trial_data.(participant_ids{p}).chanlocs;
-
-        % Retrieve the indices that correspond to electrodes that we don't want to keep
-        idx = find(~ismember({chanlocs.labels}, electrodes_of_interest));
-
-        % Removing all data from electrodes that are out of interst (OoI)
-        corrected_trials.(participant_ids{p}).corrected_data2sec(idx,:,:) = [];
+        for p = 1:length(participant_ids)
+            chanlocs = EEG_trial_data.(participant_ids{p}).chanlocs;
+    
+            % Retrieve the indices that correspond to electrodes that we don't want to keep
+            idx = find(~ismember({chanlocs.labels}, electrodes_of_interest));
+    
+            % Removing all data from electrodes that are out of interst (OoI)
+            corrected_trials.(participant_ids{p}).corrected_data2sec(idx,:,:) = [];
+        end
     end
 end
-
 
 
 
@@ -56,6 +62,7 @@ mean_trials_45 = [];
 
 for p = 1:length(participant_ids)
     participant_id = participant_ids{p};
+    
 
     participant_meta_indices = find(strcmp({corrected_trials.metaInfo.participant_id}, participant_id));
     participant_meta_info = corrected_trials.metaInfo(participant_meta_indices);
@@ -71,6 +78,10 @@ for p = 1:length(participant_ids)
 
     trials_20.(participant_id) = squeeze(mean(trials_20_data, 1));  % Average over electrodes (dimension 1)
     trials_45.(participant_id) = squeeze(mean(trials_45_data, 1));  % Average over electrodes (dimension 1)
+
+    % STORE IN MEGA OUTPUT STRUCTURE
+    corrected_trials.(participant_id).corrected_data2sec_20 = trials_20_data;
+    corrected_trials.(participant_id).corrected_data2sec_45 = trials_45_data;
 end
 
 % COMPUTE MEAN AND STD
@@ -448,8 +459,40 @@ hold off;
 
 
 
+%% EXPORT DATA INTO CSV
+data = corrected_trials;
+
+IDs = unique({data.metaInfo.participant_id});
+output_data = [];
+meta = corrected_trials.metaInfo;
+
+for i=1:length(IDs)
+    ID = IDs{i};
+    meta_i = meta(strcmp({meta.participant_id}, participant_id) & [meta.FieldOfView] == 20);
+    data_20 = data.(ID).corrected_data2sec_20;
+    [E, ~, Tr] = size(data_20);
+
+    for trial = 1:Tr
+        for electrode = 1:E
+            time_series = squeeze(data(electrode, :, trial));
+            output_row = {ID, 20, meta_i(trial).TrialIndex, meta_i(trial).BlockIndex, electrode, time_series'};
+            output_data = [output_data; output_row]; 
+        end
+    end
+end
+
+
+% Convertir les données en table pour une meilleure lisibilité
+%headers = ['Participant_ID', 'Field of View', 'Trial', 'Block', 'Electrode', arrayfun(@(x) ['Time_' num2str(x)], 1:T, 'UniformOutput', false)];
+% output_table = cell2table(output_data, 'VariableNames', headers);
+output_table = cell2table(output_data, 'VariableNames', {'ParticipantID', 'FieldOfView', 'TrialIndex', 'BlockIndex', 'Electrode', 'TimeSeries'});
+
+writetable(output_table, ['outputs/corrected_data_FoV_' FoV '.csv']);
+writetable(struct2table(meta),' outputs/corrected_metadata.csv');
 
 
 
 
 return
+
+

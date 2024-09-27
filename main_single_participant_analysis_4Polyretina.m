@@ -26,8 +26,8 @@ if ~exist(output_filepath, 'dir')
     mkdir(output_filepath);
 end
 
-subject_inds = 9;
-% subject_inds = [1, 2, 3, 6, 8];
+%subject_inds = 9;
+subject_inds = [1, 2, 3, 6, 7, 8, 9];
 
 % Checking if computing the spectra has already been done
 if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(fullfile(output_filepath, 'EEG_baseline_data.mat'),'file') || overwriteSpectraComputations)
@@ -547,7 +547,7 @@ end
 
 %% SHORT DURATION ANALYSIS (LAST 2 SECONDS OF TRIALS)
 
-EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, 1);
+EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, 1, 0);
 
 
 
