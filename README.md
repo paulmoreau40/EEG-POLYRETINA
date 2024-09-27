@@ -47,6 +47,18 @@ pip install -r requirements.txt
 ## **4. Usage**
 
 ## **5. Project Structure**
+Important codes:
+- Behavioural data: EEG_behavioural_analysis.ipynb (time taken to do the task or "reaction time", and success rate) for each Field of View.
+- EEG data:
+    - ConfigEEGPOL.m (study configuration and parameters)
+    - main_preprocessing_POL.m (XDF files import, data preparation, data preprocessing, ICA algorithm, Dipole Fitting, ICs autolabelling, ICs manual selection)
+    - keptComponents_POL.m (list of Independent Components manually selected)
+    - main_single_participant_analysis_4Polyretina.m ()
+ 
+    - Data preparation and preprocessing:
+        - xdf2set.m
+        - export_events_EEGPOL.m (import and adapt the structure of events to create a table with the events name, type, time, latency, blocks and trials)
+        - events_check_EEGPOL.m (check the integrity of the EEG data for each event) 
 
 ## **6. Authors, Credits, and Acknowledgments**
 - Authors: Paul Moreau, Antonin Duret, Sandrine Hinrichs
