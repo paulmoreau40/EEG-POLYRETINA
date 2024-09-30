@@ -547,7 +547,7 @@ end
 
 %% SHORT DURATION ANALYSIS (LAST 2 SECONDS OF TRIALS)
 
-EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, 1, 0);
+EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, 1, 1);
 
 
 
