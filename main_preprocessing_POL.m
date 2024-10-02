@@ -112,23 +112,27 @@ for subject_ind = subject_inds
         
         EEG_preproc = preprocess(EEG_prepared, study_config, doBadChans);
         
-        fileID = fopen('summary.txt','a');
-        fprintf(fileID, '%s:\n', subject);
-        fprintf(fileID, 'Rank of the preprocessed EEG set: %d\n',...
-            EEG_preproc.nbchan - length(EEG_preproc.etc.noisyChannelsDetection.noisyChannels.all));
-        fprintf(fileID, '%d data points in the preprocessed EEG set.\n', EEG_preproc.pnts);
+
+        % Displays preprocessing statistics (rank, data points, and percentage of rejected samples).
+        disp('---------------------------------');
+        rank = EEG_preproc.nbchan - length(EEG_preproc.etc.noisyChannelsDetection.noisyChannels.all);
+        fprintf('%s:\n', subject);  % Print subject name
+        fprintf('Rank of the preprocessed EEG set: %d\n', rank);
+        fprintf('%d data points in the preprocessed EEG set.\n', EEG_preproc.pnts);
+        
         switch study_config.badSampsRejection
             case 'app'
-                fprintf(fileID, '%.1f%% of data rejected by preprocessing.\n',...
-                    100*sum(EEG_preproc.etc.APP.rejectedSamples)/length(EEG_preproc.etc.APP.rejectedSamples));
+                rejected_percentage = 100 * sum(EEG_preproc.etc.APP.rejectedSamples) / length(EEG_preproc.etc.APP.rejectedSamples);
+                fprintf('%.1f%% of data rejected by preprocessing (APP).\n', rejected_percentage);
             case 'asr'
-                fprintf(fileID, '%.1f%% of data rejected by preprocessing.\n',...
-                    100*sum(EEG_preproc.etc.ASR.rejectedSamples)/length(EEG_preproc.etc.ASR.rejectedSamples));
+                rejected_percentage = 100 * sum(EEG_preproc.etc.ASR.rejectedSamples) / length(EEG_preproc.etc.ASR.rejectedSamples);
+                fprintf('%.1f%% of data rejected by preprocessing (ASR).\n', rejected_percentage);
             case 'autoMoBI'
-                fprintf(fileID, '%.1f%% of data rejected by preprocessing.\n',...
-                    100*sum(EEG_preproc.etc.autoMoBI.rejectedSamples)/length(EEG_preproc.etc.autoMoBI.rejectedSamples));
+                rejected_percentage = 100 * sum(EEG_preproc.etc.autoMoBI.rejectedSamples) / length(EEG_preproc.etc.autoMoBI.rejectedSamples);
+                fprintf('%.1f%% of data rejected by preprocessing (autoMoBI).\n', rejected_percentage);
         end
-        fclose(fileID);
+        disp('---------------------------------');
+
         
         EEG_forICA = pop_saveset(EEG_preproc, 'filename', N.preICAFile,'filepath', N.searchFolder_2arch_rej);
         [ALLEEG, EEG_forICA, CURRENTSET] = eeg_store(ALLEEG, EEG_forICA, CURRENTSET);
