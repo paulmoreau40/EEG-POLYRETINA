@@ -480,7 +480,7 @@ output_data_45 = [];
 
 for i = 1:length(IDs)
     ID = IDs{i};
-    disp("Process data of participant ", ID, " for csv exports")
+    disp(['Process data of participant ', ID, ' for csv exports'])
     
     output_data_20 = [output_data_20; process_FoV(data, meta, ID, 20, 'corrected_data2sec_20')];
     

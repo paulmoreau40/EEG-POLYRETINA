@@ -10,8 +10,6 @@ function events = export_events_EEGPOL(AllStreams, Event_streams, times, block_i
 % Outputs:
 %   - events :              Structure containing all events loaded.
 
-% PAUL : only one stream for the Events, so NO LOOP -> CHANGE LATER IF
-% NEEDED
 
 if ~isscalar(Event_streams)
     error('More than 1 event streams ?')
@@ -32,16 +30,6 @@ new_fields = {'FamEmptyStart', 'FamEmptyEnd', 'FamSymbolStart', 'FamSymbolEnd', 
     'BaselineCoarseStart', 'BaselineCoarseEnd', 'TrialStart', 'TrialEnd'}';
 dic = dictionary(required_fields, new_fields);
 
-% tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
-%     cellfun(@str2double, markers.events(:,2)), cellfun(@str2double, markers.events(:,3)), NaN(events_count,1), zeros(events_count,1), ...
-%     zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value', 'Duration','Latency','BlockIndex','TrialIndex'});
-
-% % Try removing duration field
-% tbl = table(markers.index, markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
-%     cellfun(@str2double, markers.events(:,2)), NaN(events_count,1), zeros(events_count,1), ...
-%     zeros(events_count,1), 'VariableNames', {'Index', 'Time', 'RawName', 'Name', 'TrialType', 'Value','Latency','BlockIndex','TrialIndex'}); %'Duration'
-
-% Try removing Index
 tbl = table(markers.time, markers.events(:,1), repmat({NaN}, events_count,1), repmat({NaN}, events_count,1), ...
     cellfun(@str2double, markers.events(:,2)), cellfun(@str2double, markers.events(:,3)), NaN(events_count,1), zeros(events_count,1), ...
     zeros(events_count,1), 'VariableNames', {'Time', 'RawName', 'Name', 'TrialType', 'Value', 'Duration','Latency','BlockIndex','TrialIndex'});
@@ -139,8 +127,6 @@ for i = 1:length(baseline_start_indices)
         new_row.RawName = {'End baseline'};
         new_row.Latency = tbl.Latency(next_index) - 1;
         new_row.Time = tbl.Time(next_index) - 0.01;
-        %new_row.BlockIndex = tbl.BlockIndex(current_index);
-        %new_row.TrialIndex = tbl.TrialIndex(current_index);
         
         new_rows = [new_rows; new_row];
     end
@@ -320,7 +306,6 @@ events = struct('type', {}, 'latency', {});
 
 for t=1:height(tbl)
     events(t).type = tbl.Name{t};
-    %events(t).duration = tbl.DurationComputed(t);
     events(t).latency = tbl.Latency(t);
     events(t).TrialType = tbl.TrialType{t};
     events(t).BlockIndex = tbl.BlockIndex(t);
@@ -336,7 +321,6 @@ if ~any(BlockStart)
         startEvent = events(1);
         startEvent.type = 'BlockStart';
         startEvent.latency = events(1).latency - 1;
-        %startEvent.duration = NaN;
         startEvent.TrialType = NaN;
         startEvent.BlockIndex = NaN;
         startEvent.TrialIndex = NaN;
@@ -351,57 +335,3 @@ end
 
 return
 
-
-
-
-
-
-
-
-% 
-% 
-% 
-% 
-% 
-% for ev=1:length(Event_streams)
-%     stream = AllStreams{Event_streams(ev)};
-% 
-%     if strcmp(stream.info.type,'Markers')
-%         markers = SplitEventFields_EEGAFF(stream);
-% 
-%         start = 1;
-%         stop = length(markers.time);
-%         events_count = length(markers.time);
-%     end
-% 
-%     command = '';
-%     for f = 1:numel(required_fields)
-%         if strcmp(required_fields{f}, 'duration')
-%             command = [command,'''',required_fields{f},''',num2cell(ones(1, events_count)),'];
-%         elseif strcmp(required_types{f}, 'str')
-%             command = [command,'''',required_fields{f},''','''','];
-%         elseif strcmp(required_types{f}, 'num')
-%             command = [command,'''',required_fields{f},''',[],'];
-%         end
-%     end
-%     % Remove the last ','
-%     command = command(1:end-1);
-%     eval(['s_events = struct(',command,');']);
-% 
-%     for t=start:stop
-%         if strcmp(stream.info.type,'Markers')
-%             [~,s_events(t).latency] = min(abs(times - markers.time(t)));
-%             s_events(t).type = markers.event{t};
-%             s_events(t).duration = markers.duration(t);
-%             s_events(t).BlockIndex = markers.block(t);
-%             s_events(t).TrialIndex = markers.trial(t);
-%             s_events(t).TrialType = markers.type{t};
-%             s_events(t).Phase = markers.phase{t};
-%             s_events(t).SoundName = markers.name{t};
-%             s_events(t).Distance = markers.distance(t);
-%             s_events(t).Location = markers.location{t};
-%         end
-%     end
-%     events = [events, s_events];
-% end
-% end

@@ -1,9 +1,5 @@
-%% processing loop
-% addpath(genpath('C:\Users\Paul Moreau\Documents\EEG_project\EEG-POL')); %paul
-% addpath('C:\Users\Paul Moreau\Documents\EEG_project\eeglab2021.0');
-% addpath('C:\Users\Paul Moreau\Documents\EEG_project\ParforProgMon-master')
 
-addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL')); %paul
+addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL'));
 addpath('F:\PM_Polyretina\EEG_project\eeglab2024.0\');
 
 configEEGPOL;
@@ -22,7 +18,7 @@ overwriteDipoles = false | overwriteICA; % Boolean to force the dipole fitting t
 skipAutoLabeling = false; % Boolean to avoid the automatic labeling
 overwriteAutoLabeling = false | overwriteICA | (overwriteDipoles & study_config.doDipoleFitting); % Boolean to force IClabel to run anyway
 overwriteManualLabeling = true | overwriteAutoLabeling; % Boolean to force reviewing of IC labels manually
-%overwriteSecondTempRej = false | overwriteManualLabeling; % Boolean to force second temporal rejection
+
 for subject_ind = subject_inds
     if ~exist('ALLEEG','var')
         launchEEGLAB;
@@ -66,26 +62,12 @@ for subject_ind = subject_inds
         NanInspection = sum(NanInspection,1)>0;
         perc = 100*sum(NanInspection)/length(NanInspection);
         
-        %EEG_merged = events_check(EEG_merged, study_config);
         EEG_merged = events_check_EEGPOL(EEG_merged, study_config);
-        
-        % Read distance Answers (now included in the report function)
-        %Answers = ReadAnswers_EEGAFF(study_config);
-        
-        % Create Report for global stats
-        %EEG_merged = Report_EEGAFF(EEG_merged, study_config); % PAUL DECOMMENT
         
         %Merge the DataBases saving merged DataBase into .csv
         %MergedDataBase = [MergedDataBase,DataBase];        
         %writetable(struct2table(MergedDataBase),[study_config.study_folder study_config.preprocessing_folder '/MergedDatabase.csv'],'Delimiter',';');
-         
-        %plot zones and start positions
-        %check_zones_EEGAFF(DataBase, study_config)
-        % plot answers
-        %check_Answers_EEGAFF(DataBase, study_config)
-        
-        % Boxplot-groups_stat = some preliminary stats (for the included participants
-          
+                  
         % Resampling
         EEG_merged = pop_resample(EEG_merged, study_config.resample_freq);
         EEG_merged = eeg_checkset(EEG_merged);
@@ -330,12 +312,7 @@ for subject_ind = subject_inds
                 kept_comp = union(kept_comp, compsInspect(i).(study_config.cats2keep{ct}));
             end
            
-            %comp2review = union(union(compsInspect(i).Brain,compsInspect(i).BrainWithNoise),compsInspect(i).Doubts);
-            % comp2review = union(setdiff(compsInspect(i).NoiseWithBrain,compsInspect(i).Doubts),...
-            %     setdiff(compsInspect(i).Doubts_Ainhoa,union(union(union(compsInspect(i).Brain,...
-            %     compsInspect(i).BrainWithNoise),compsInspect(i).Checkerboard),compsInspect(i).Doubts)));
             comp2review = compsInspect(i).Doubts;
-            %comp2review = union(compsInspect(i).Brain,compsInspect(i).BrainWithNoise);
             userDecision1 = input(sprintf('Review subject %s? ',subject)); % 0 (no) or 1 (yes)
             if userDecision1
                 for c = 1:length(comp2review)

@@ -1,12 +1,8 @@
-%close all; %clear all; clc;
-
-%clear all;
 configEEGPOL;
 
 fontsize_labels = 14;
 fontsize_title = 16;
 
-% Loading EEGLAB
 if ~exist('ALLEEG','var')
     launchEEGLAB;
 end
@@ -81,12 +77,7 @@ if (~exist(fullfile(output_filepath, 'EEG_trial_data.mat'),'file') || ~exist(ful
             EEG_coarse_data.metaInfo = struct('participant_id', [],'type', [], 'idx', []);
         end
 
-        % 4.1. Power spectrum for trials and baselines
         [EEG_trial_data, EEG_baseline_data, EEG_coarse_data] = extract_segments_EEG_compute_spectrum(EEG2, EEG_trial_data, EEG_baseline_data, EEG_coarse_data, subject, false);
-
-        % 4.2. Retrieving Baseline: One Baseline per trial        
-        %EEG_baseline_data = extract_baselines_EEG_compute_spectrum(EEG2, EEG_baseline_data, 'black_baseline',num2str(subjects(s)), false);
-            
     end
     % % Removing initial shift which is created when concatenating metaInfo
     EEG_trial_data.metaInfo(1) = [];
@@ -2218,7 +2209,8 @@ end
 %     hold on;
 %     plot(freqs_of_interest, spectrum_baseline_region_of_interest_averaged_subjects_dB, 'Color', color_baseline);
 %     patch('XData',x2,'YData',inBetween_spectrum_RoI_dB,'FaceColor', color_trial,'EdgeColor',color_trial,'FaceAlpha', 0.2);
-%     patch('XData',x2,'YData',inBetween_spectrum_baseline_RoI_dB,'FaceColor', color_baseline,'EdgeColor',color_baseline,'FaceAlpha', 0.2);
+%     patch('XData',x2,'YData',inBetween_spectrum_baseline_RoI_dB,'FaceColor',
+%     color_baseline,'EdgeColor',color_baseline,'FaceAlpha', 0.2); 
 %     title(['Spectrum over ' region ' Region',' (' num2str(angle) '° vs. Baseline of ' num2str(angle) '°)']);
 %     legend([num2str(angle) '°'], ['Baseline ' num2str(angle) '°']);
 %     xlabel('Frequencies [Hz]');
