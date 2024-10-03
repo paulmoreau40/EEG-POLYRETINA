@@ -2,8 +2,8 @@
 *.jpg
 *.mat
 *.txt
-/myenv
-/venv
-/outputs
-/Data
+/data
 /toolboxes/eeglab2024.0
+*.DS_Store
+/polyretina-env
+/venv
