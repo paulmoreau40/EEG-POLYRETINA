@@ -18,7 +18,7 @@ git clone https://github.com/paulmoreau40/EEG-POLYRETINA.git && cd EEG-POLYRETIN
 To create a virtual environment, run the following command:
 
 ```console
-python -m venv polyretina
+python -m venv polyretina-env
 ```
 
 ### Activate the Virtual Environment
@@ -26,11 +26,11 @@ Activate the virtual environment using one of the following commands based on yo
 
 **Windows:**
 ```console
-.\polyretina\Scripts\activate
+.\polyretina-env\Scripts\activate
 ```
 **Linux / Mac:**
 ```console
-source polyretina/bin/activate
+source polyretina-env/bin/activate
 ```
 
 ### Install Dependencies
