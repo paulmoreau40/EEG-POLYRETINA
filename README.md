@@ -40,6 +40,16 @@ Next, install the necessary dependencies by running:
 pip install -r requirements.txt
 ```
 
+### Additional Requirements
+
+**EEGLAB 2024.0**:  
+   - Download EEGLAB version 2024.0 from the official website: https://sccn.ucsd.edu/eeglab/download.php.
+   - Unzip the downloaded archive.
+   - Place the **EEGLAB** folder in the **toolboxes/** directory of the project:
+     ```
+     /toolboxes/eeglab2024.0/
+     ```
+
 
 
 ## **3. Project Structure**
