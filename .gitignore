@@ -1,5 +1,7 @@
 *.asv
 *.jpg
+*.png
+*.fig
 *.mat
 *.txt
 /data
