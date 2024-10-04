@@ -11,6 +11,7 @@ switch lower(user)
         MetaFile = fullfile('D:\Data_EEG-AFF\v2', 'TrackingEEGanalysis_EEGAFF.xlsx');
         MetaTab = 'SubjectsInfo';
         SR_path = '';
+        
     case 'ilaria'
         main = '/Users/ilaria/Documents/MATLAB/data/EEG-AFF/analysis/';
         Figs = '/Users/ilaria/Documents/MATLAB/data/EEG-AFF/figures/';
@@ -26,9 +27,9 @@ switch lower(user)
         SR_path = '';
     
     case 'paulcoarse'
-        main = 'F:\PM_Polyretina\data\analysisCoarse\';
-        Figs = 'F:\PM_Polyretina\data\figuresCoarse\';
-        MetaFile = fullfile('F:\PM_Polyretina\data\analysisCoarse\', 'Polyretina_meta.xlsx');
+        main = 'F:\EEG-POL\data\analysisCoarse\';
+        Figs = 'F:\EEG-POL\figures\';
+        MetaFile = fullfile('F:\EEG-POL\data\analysisCoarse\', 'Polyretina_meta.xlsx');
         MetaTab = 'SubjectsInfo';
         SR_path = '';
 

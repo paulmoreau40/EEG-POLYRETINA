@@ -4,8 +4,9 @@
 *.fig
 *.mat
 *.txt
-/data
 /toolboxes/eeglab2024.0
 *.DS_Store
 /polyretina-env
 /venv
+/data/ 
+!data/analysis/0_raw-data/P001/CA-213_EOG.elc
