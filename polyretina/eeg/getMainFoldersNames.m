@@ -19,17 +19,17 @@ switch lower(user)
         MetaTab = 'SubjectsInfo';
         SR_path = '';
 
-    case 'paul'
-        main = 'F:\PM_Polyretina\Data\analysis\';
-        Figs = 'F:\PM_Polyretina\Data\figures\';
-        MetaFile = fullfile('F:\PM_Polyretina\Data\analysis\', 'Polyretina_meta.xlsx');
-        MetaTab = 'SubjectsInfo';
-        SR_path = '';
+    % case 'paul' % OLD FOLDER
+    %     main = 'F:\PM_Polyretina\Data\analysis\';
+    %     Figs = 'F:\PM_Polyretina\Data\figures\';
+    %     MetaFile = fullfile('F:\PM_Polyretina\Data\analysis\', 'Polyretina_meta.xlsx');
+    %     MetaTab = 'SubjectsInfo';
+    %     SR_path = '';
     
     case 'paulcoarse'
-        main = 'F:\EEG-POL\data\analysisCoarse\';
+        main = 'F:\EEG-POL\data\analysis\';
         Figs = 'F:\EEG-POL\figures\';
-        MetaFile = fullfile('F:\EEG-POL\data\analysisCoarse\', 'Polyretina_meta.xlsx');
+        MetaFile = fullfile('F:\EEG-POL\data\analysis\', 'Polyretina_meta.xlsx');
         MetaTab = 'SubjectsInfo';
         SR_path = '';
 

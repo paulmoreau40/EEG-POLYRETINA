@@ -9,4 +9,5 @@
 /polyretina-env
 /venv
 /data/ 
+/outputs/
 !data/analysis/0_raw-data/P001/CA-213_EOG.elc
