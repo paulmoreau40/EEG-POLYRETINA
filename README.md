@@ -3,6 +3,8 @@
 ## **1. Introduction**
 This repository contains an EEG analysis pipeline developed for investigating the impact of varying fields of view on the effectiveness of the POLYRETINA retinal implant. The pipeline is based on the BeMoBIL framework and is designed to handle preprocessing, analysis, and visualisation of EEG data. The POLYRETINA project aims to assess how different visual angles influence cognitive load and user performance, with the ultimate goal of enhancing autonomy for individuals with acquired blindness.
 
+The project is conducted at the Institut de la Vision (Paris, FRANCE), within the Aging in Vision and Action Laboratory (AVA Lab).
+
 ## **2. Installation**
 
 Follow these steps to set up the project environment:
