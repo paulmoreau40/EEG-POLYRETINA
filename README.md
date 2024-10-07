@@ -102,11 +102,11 @@ Summary of the folders structure:
     - [Aging in Vision and Action, Sorbonne Université / Institut de la Vison / INSERM / CNRS](https://www.institut-vision.org/en/research/aging-vision-and-action#:~:text=Our%20team%20analyzes%20the%20aging,research%20and%20innovative%20technology%20transfer.)
     - [Ophthalmic and neural technologies Laboratory](https://ghezzi-lab.org/)
     - [Ecole Polytechnique Fédérale de Lausanne, EPFL](https://www.epfl.ch/fr/)
-- Credits: The EEG analysis pipeline is based on the BeMoBIL framework, with adaptations for the POLYRETINA field of view study.
+- Credits: The EEG analysis pipeline is based on the [BeMoBIL framework](https://www.tu.berlin/en/bpn/research/berlin-mobile-brain-body-imaging-lab), with adaptations for the POLYRETINA field of view study.
 
 ## **5. References**
 Bibliography: 
-- [BeMoBIL: Brain Mobile Brain/Body Imaging Lab](https://www.tu.berlin/en/bpn/research/berlin-mobile-brain-body-imaging-lab)
+- [The BeMoBIL Pipeline for automated analyses of multimodal mobile brain and body imaging data (Klug et al., 2022)](https://www.biorxiv.org/content/10.1101/2022.09.29.510051v2.abstract)
 - [POLYRETINA restores light responses in vivo in blind Göttingen minipigs (Vagni et al., 2022)](https://www.nature.com/articles/s41467-022-31180-z)
 
 
