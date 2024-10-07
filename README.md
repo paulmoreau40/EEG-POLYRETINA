@@ -55,26 +55,14 @@ pip install -r requirements.txt
 
 
 ## **3. Project Structure**
-Important codes:
-- Behavioural data: **EEG_behavioural_analysis.ipynb** (time taken to do the task or "reaction time", and success rate) for each Field of View.
-- EEG data:
-    - **ConfigEEGPOL.m** (study configuration and parameters)
-    - **main_preprocessing.m** (XDF files import, data preparation, data preprocessing, ICA algorithm, Dipole Fitting, ICs autolabelling, ICs manual selection)
-    - **keptComponents_POL.m** (list of Independent Components manually selected)
-    - **main_single_participant_analysis.m** (main analysis and statistics with data visualisation)
- 
-    - Data preparation and preprocessing:
-        - **xdf2set.m**
-        - **export_events_EEGPOL.m** (import and adapt the structure of events to create a table with the events name, type, time, latency, blocks and trials)
-        - **events_check_EEGPOL.m** (check the integrity of the EEG data for each event) 
 
-Summary of the folders structure:
+**Summary of the folders structure**
 ```
 ├── /data/
 │   └── /analysis/             # Data for EEG analysis (raw, preprocessed, processed, analysis)
 │   └── /behavioural/          # Data for behavioural analysis (trial time, success rate)
 │
-├── /polyretina/               # Main project folder
+├── /polyretina/               # Functions and codes
 │   ├── /behavioural/          # Contains Jupyter notebooks for behavioral analysis
 │   │   └── analysis_notebook.ipynb
 │   ├── /eeg/                  # Contains EEG-related functions and MATLAB scripts
@@ -93,8 +81,29 @@ Summary of the folders structure:
 │   └── /ParforProgMon/        # Parfor Progress Monitor toolbox
 │
 ├── requirements.txt           # Python dependencies file
-
 ```
+
+**Important codes for the analysis**
+1. **Behavioural data**
+
+    **`EEG_behavioural_analysis.ipynb`**: Analyses time taken to complete the task and success rate for each Field of View (20°/45°).
+
+2. **EEG data**
+   
+    Mains:
+    - **`main_preprocessing.m`**: Imports XDF files, prepares data and preprocesses it, performs ICA and Dipole Fitting, and labels Independent Components (ICs) automatically and manually.
+    - **`main_single_participant_analysis.m`**: Conducts main analysis and statistics with data visualisation.
+
+    Configuration:
+    - **`ConfigEEGPOL.m`**: Contains study parameters (threshold filters, channels ELC filenames, types of data etc.). Can be modified according to the needs of the study.
+    - **`getMainFoldersNames.m`**:  Manages paths to fit the directory structure (data, figures, etc.). Can be personalised if necessary.
+
+    Data preparation and preprocessing:
+    - **`xdf2set.m`**: Converts raw XDF files to EEGLAB .set format, processing EEG, motion capture and eye tracking data, events, and channels.
+    - **`export_events_EEGPOL.m`**: Imports the events and creates a table with event names, types, latencies, blocks, and trials.
+    - **`events_check_EEGPOL.m`**: Checks the integrity of the EEG data for each event.
+    - **`keptComponents_POL.m`**: Lists Independent Components that were manually selected (filled by the user).
+
 
 ## **4. Authors, Credits, and Acknowledgments**
 - Authors and collaborators: Paul Moreau, Antonin Duret, Sandrine Hinrichs, Denis Sheynikhovich, Angelo Arleo, Diego Ghezzi
