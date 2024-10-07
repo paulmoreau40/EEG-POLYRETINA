@@ -1,5 +1,15 @@
-%% ONLY CHANGE THESE PARTS!
-user = 'paulcoarse';
+% The configEEGPOL.m file serves as a configuration manager for EEG 
+% data processing, specifying the folder structure, subject definitions, 
+% processing parameters, and file naming conventions required for the analysis. 
+% It initializes essential paths for raw data, figures, and processed files 
+% while defining study-specific parameters such as filtering settings, 
+% ICA methods, and artifact rejection criteria. 
+% This setup facilitates seamless preprocessing, analysis, and visualisation of EEG data across multiple subjects.
+
+
+
+
+user = 'default'; % CHANGE ACCORDING TO NEEDS IN getmainFoldersNames
 
 %% General foldernames and filenames
 [study_config.study_folder, study_config.raw_data_folder, study_config.electrodes_folder,...
@@ -82,7 +92,6 @@ study_config.rename_channels = [];
 
 % Leave this empty if you have standard channel names that should use standard locations:
 %study_config.channel_locations_filename = 'CA-213_waveguard128_duke.elc'; % = [];
-%study_config.channel_locations_filename = 'CA-213_waveguard128_duke_modif.elc'; % = []; % PAUL: elc file modified (because of error with loadtxt() in readeetraklocs
 study_config.channel_locations_filename = 'CA-213_EOG.elc'; % PAUL: "EOG" instead of noEOG, to have 128 channels like in the EEG data (otherwise, 127 if removes VEOG)
 study_config.indiv_channel_locations_filename = '-get_chanlocs.txt';
 

@@ -3,15 +3,17 @@ configEEGPOL;
 fontsize_labels = 14;
 fontsize_title = 16;
 
+
+addpath(genpath(pwd));
+addpath(fullfile(pwd, '..', '..', 'toolboxes', 'eeglab2024.0'));
+addpath(genpath(fullfile(pwd, '..', '..', 'toolboxes', 'ParforProgMon')));
+addpath(genpath(fullfile(pwd, '..', '..', 'toolboxes', 'bemobil_pipeline0.2')));
+
+overwriteSpectraComputations = false;
+
 if ~exist('ALLEEG','var')
     launchEEGLAB;
 end
-
-
-addpath(genpath('F:\PM_Polyretina\EEG_project\EEG-POL')); %paul
-addpath('F:\PM_Polyretina\EEG_project\eeglab2024.0\');
-
-overwriteSpectraComputations = false;
 
 %% Considering a single participant:
 

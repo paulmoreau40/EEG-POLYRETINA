@@ -5,6 +5,15 @@ function [main, raw, elec, raw_EEGLAB, preproc, SS_ana, MS_ana, Figs, MetaFile, 
 %   user        - permits to specify the user for the main path (Alex or JB)
 
 switch lower(user)
+    case 'default'
+        base_path = fileparts(fileparts(pwd));
+        main = [fullfile(base_path, 'data', 'analysis'), filesep];
+        Figs = [fullfile(base_path, 'figures'), filesep];
+        MetaFile = fullfile(main, 'Polyretina_meta.xlsx');
+        MetaTab = 'SubjectsInfo';
+        SR_path = '';
+
+    % if default paths don't work, custom your personal paths :
     case 'alex'
         main = 'D:\Data_EEG-AFF\v2\analysis\';
         Figs = 'D:\Data_EEG-AFF\v2\figures\';
@@ -19,27 +28,12 @@ switch lower(user)
         MetaTab = 'SubjectsInfo';
         SR_path = '';
 
-    % case 'paul' % OLD FOLDER
-    %     main = 'F:\PM_Polyretina\Data\analysis\';
-    %     Figs = 'F:\PM_Polyretina\Data\figures\';
-    %     MetaFile = fullfile('F:\PM_Polyretina\Data\analysis\', 'Polyretina_meta.xlsx');
-    %     MetaTab = 'SubjectsInfo';
-    %     SR_path = '';
-    
     case 'paulcoarse'
         main = 'F:\EEG-POL\data\analysis\';
         Figs = 'F:\EEG-POL\figures\';
         MetaFile = fullfile('F:\EEG-POL\data\analysis\', 'Polyretina_meta.xlsx');
         MetaTab = 'SubjectsInfo';
         SR_path = '';
-
-    % case 'paulcoarse'
-    %     main = 'F:\PM_Polyretina\Data\analysisCoarse\';
-    %     Figs = 'F:\PM_Polyretina\Data\figuresCoarse\';
-    %     MetaFile = fullfile('F:\PM_Polyretina\Data\analysisCoarse\', 'Polyretina_meta.xlsx');
-    %     MetaTab = 'SubjectsInfo';
-    %     SR_path = '';
-
     otherwise
         error('Unknown user');
 end
