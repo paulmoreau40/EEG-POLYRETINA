@@ -1,4 +1,4 @@
-function [corrected_trials] = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, electrodes_of_interest, bool_plot, bool_all_electrodes)
+function [corrected_trials] = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, electrodes_of_interest, bool_plot, bool_all_electrodes, bool_export)
 
 % Baseline corrects EEG trial data, segments it by Field of View (FoV), and prepares data for visualization and export.
 %
@@ -471,37 +471,40 @@ end
 
 %% EXPORT DATA INTO CSV -> try Deep learning like LSTM to classify FoV ?
 
-data = corrected_trials;
-IDs = unique({data.metaInfo.participant_id});
-meta = corrected_trials.metaInfo;
-
-output_data_20 = [];
-output_data_45 = [];
-
-for i = 1:length(IDs)
-    ID = IDs{i};
-    disp(['Process data of participant ', ID, ' for csv exports'])
+if bool_export
+    data = corrected_trials;
+    IDs = unique({data.metaInfo.participant_id});
+    meta = corrected_trials.metaInfo;
     
-    output_data_20 = [output_data_20; process_FoV(data, meta, ID, 20, 'corrected_data2sec_20')];
+    output_data_20 = [];
+    output_data_45 = [];
     
-    output_data_45 = [output_data_45; process_FoV(data, meta, ID, 45, 'corrected_data2sec_45')];
+    for i = 1:length(IDs)
+        ID = IDs{i};
+        disp(['Process data of participant ', ID, ' for csv exports'])
+        
+        output_data_20 = [output_data_20; process_FoV(data, meta, ID, 20, 'corrected_data2sec_20')];
+        
+        output_data_45 = [output_data_45; process_FoV(data, meta, ID, 45, 'corrected_data2sec_45')];
+    end
+    
+    output_data_all = [output_data_20; output_data_45];
+    
+    var_names = [{'ParticipantID', 'FieldOfView', 'BlockIndex', 'TrialIndex', 'Electrode'}, arrayfun(@(x) ['Time_' num2str(x)], 1:size(output_data_20, 2)-5, 'UniformOutput', false)];
+    
+    output_table_20 = cell2table(output_data_20, 'VariableNames', var_names);
+    output_table_45 = cell2table(output_data_45, 'VariableNames', var_names);
+    output_table_all = cell2table(output_data_all, 'VariableNames', var_names);
+    
+    disp("Exporting into csv data for FoV 20")
+    writetable(output_table_20, 'outputs/corrected_data_FoV_20.csv');
+    disp("Exporting into csv data for FoV 45")
+    writetable(output_table_45, 'outputs/corrected_data_FoV_45.csv');
+    disp("Exporting into csv data for all FoV")
+    writetable(output_table_all, 'outputs/corrected_data_FoV_all.csv');
+    writetable(struct2table(meta), 'outputs/corrected_metadata.csv');
 end
 
-output_data_all = [output_data_20; output_data_45];
-
-var_names = [{'ParticipantID', 'FieldOfView', 'BlockIndex', 'TrialIndex', 'Electrode'}, arrayfun(@(x) ['Time_' num2str(x)], 1:size(output_data_20, 2)-5, 'UniformOutput', false)];
-
-output_table_20 = cell2table(output_data_20, 'VariableNames', var_names);
-output_table_45 = cell2table(output_data_45, 'VariableNames', var_names);
-output_table_all = cell2table(output_data_all, 'VariableNames', var_names);
-
-disp("Exporting into csv data for FoV 20")
-writetable(output_table_20, 'outputs/corrected_data_FoV_20.csv');
-disp("Exporting into csv data for FoV 45")
-writetable(output_table_45, 'outputs/corrected_data_FoV_45.csv');
-disp("Exporting into csv data for all FoV")
-writetable(output_table_all, 'outputs/corrected_data_FoV_all.csv');
-writetable(struct2table(meta), 'outputs/corrected_metadata.csv');
 
 
 
@@ -515,33 +518,6 @@ writetable(struct2table(meta), 'outputs/corrected_metadata.csv');
 
 
 
-
-% data = corrected_trials;
-% IDs = unique({data.metaInfo.participant_id});
-% output_data = [];
-% meta = corrected_trials.metaInfo;
-% FoV = 20;
-% 
-% for i=1:length(IDs)
-%     ID = IDs{i};
-%     meta_i = meta(strcmp({meta.participant_id}, ID) & [meta.FieldOfView] == 20);
-%     data_20 = data.(ID).corrected_data2sec_20;
-%     [E, T, Tr] = size(data_20);
-% 
-%     for trial = 1:Tr
-%         for electrode = 1:E
-%             time_series = squeeze(data_20(electrode, :, trial));
-%             output_row = [{ID, 20, meta_i(trial).BlockIndex, meta_i(trial).TrialIndex, electrode}, num2cell(time_series)];
-%             output_data = [output_data; output_row]; 
-%         end
-%     end
-% end
-% 
-% var_names = [{'ParticipantID', 'FieldOfView', 'BlockIndex', 'TrialIndex', 'Electrode'}, arrayfun(@(x) ['Time_' num2str(x)], 1:T, 'UniformOutput', false)];
-% output_table = cell2table(output_data, 'VariableNames', var_names);
-% 
-% writetable(output_table, 'outputs/corrected_data_FoV_20.csv');
-% writetable(struct2table(meta),'outputs/corrected_metadata.csv');
 
 
 

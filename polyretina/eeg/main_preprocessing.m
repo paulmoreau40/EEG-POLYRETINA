@@ -149,8 +149,6 @@ for subject_ind = subject_inds
     elseif ~skipICA && (~exist([N.searchFolder_2arch_rej N.postICAFile],'file') || overwriteICA)
         %continue
         EEG_forICA = pop_loadset('filename', N.preICAFile,'filepath', N.searchFolder_2arch_rej);
-        %EEG_forICA = pop_loadset('filename', N.preICAFile,'filepath', N.searchFolder_2arch, 'loadmode', 'info');
-        %fprintf('%d data points in the preprocessed EEG set.\n', EEG_forICA.pnts);
         
         [ALLEEG, EEG_forICA, CURRENTSET] = eeg_store(ALLEEG, EEG_forICA, CURRENTSET);
     end
