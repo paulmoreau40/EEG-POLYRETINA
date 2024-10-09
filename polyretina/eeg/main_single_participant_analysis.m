@@ -396,9 +396,6 @@ EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_basel
 
 
 
-
-
-
 %% 9. Permutation Analysis -- Multi Subject Analysis
 
 %% Part 1: Condition VS. Baseline
@@ -448,7 +445,6 @@ plot_heatmap_baseline_or_condition('45° FoV vs. Baseline', data_heatmap_45vbase,
 
 
 
-
 %% Part 2: Condition VS. Condition (20 vs 45)
 
 if ~exist('clustered_stats_table_conditionvcondition','var')
@@ -473,6 +469,34 @@ plot_heatmap_baseline_or_condition('20° FoV vs. 45° FoV', data_heatmap_condition
 
 
 
+%% 11. Comparing baseline-corrected signals
+
+% 11.1. Correcting the signals
+    
+% Given that the spectrums are considered in decibel scale,
+% the signals are substracted
+
+% Converting initial spectrum into logarithmic scale
+spectrum_trial_20_dB = 10*log10(spectrum_trial_20);
+spectrum_trial_45_dB = 10*log10(spectrum_trial_45);
+
+% PAUL
+spectrum_trial_20_base_dB = 10*log10(spectrum_baseline_20);
+spectrum_trial_45_base_dB = 10*log10(spectrum_baseline_45);
+
+spectrum_trial_relative_20vbase_dB = spectrum_trial_20_dB - spectrum_trial_20_base_dB;
+spectrum_trial_relative_45vbase_dB =  spectrum_trial_45_dB - spectrum_trial_45_base_dB;
+
+if ~exist('clustered_stats_table_baseline_corrected','var')
+    [clustered_stats_table_baseline_corrected, statistical_clusters_baselinecorrected, stats_surrog_baselinecorrected, pairwise_stats_baselinecorrected, permutations_baselinecorrected] = ...
+    compute_permutations('FoV20vbase', 'FoV45vbase', spectrum_trial_relative_20vbase_dB, spectrum_trial_relative_45vbase_dB, commonOptions);
+end
+
+data_heatmap_baselinecorrected = format_for_heatmap_baselinecorrected_dB(clustered_stats_table_baseline_corrected, statistical_clusters_baselinecorrected, spectrum_trial_relative_20vbase_dB, spectrum_trial_relative_45vbase_dB);
+
+[data_heatmap_baselinecorrected, new_electrode_labels] = organize_by_electrodes(data_heatmap_baselinecorrected, {EEG_trial_data.(participants{end}).chanlocs(:).labels}, oragnize_alphabetically_electrodes);
+
+plot_heatmap_baseline_or_condition('20° corrected with 20° baseline VS. 45° corrected with 45° baseline', data_heatmap_baselinecorrected, new_electrode_labels, y, N_colors_standard);
 
 
 
@@ -485,7 +509,16 @@ plot_heatmap_baseline_or_condition('20° FoV vs. 45° FoV', data_heatmap_condition
 
 
 
-%% 11. Making Additional Plots to Accompany Heatmaps
+
+
+
+
+
+
+
+
+
+%% 12. Making Additional Plots to Accompany Heatmaps
 
 % 11.1. Condition v Baseline
 
@@ -528,84 +561,6 @@ plot_spectrum_all('frontal', 20, 45, spectrum_trial_20, spectrum_trial_45, parti
 % colorbar;
 % topoplot(relative_spectrum_trialvbaseline_20v45_dB, file_electrode_positions);
 % title({'Heatmap for 20-35 Hz','for relative spectrum 20° vs 45°'});
-
-% Fig 2: Spectrum over Frontal
-    % Retrieving over the brain Region of Interest: Frontal
-spectrum_trial_20_region_of_interest = select_frequencies_OI(spectrum_trial_20, 'frontal', {EEG_trial_data.(participants{end}).chanlocs(:).labels});
-spectrum_trial_45_region_of_interest = select_frequencies_OI(spectrum_trial_45, 'frontal', {EEG_trial_data.(participants{end}).chanlocs(:).labels});
-    % Get Average over electrodes of interest
-spectrum_trial_20_region_of_interest_averaged_electrodes = mean(spectrum_trial_20_region_of_interest, 1);
-spectrum_trial_45_region_of_interest_averaged_electrodes = mean(spectrum_trial_45_region_of_interest, 1);
-    % Get Average and Standard Deviation over Participants
-spectrum_trial_20_region_of_interest_averaged_subjects = mean(spectrum_trial_20_region_of_interest_averaged_electrodes,3);
-spectrum_trial_20_region_of_interest_std_subjects = std(spectrum_trial_20_region_of_interest_averaged_electrodes,[],3)/sqrt(size(spectrum_trial_20_region_of_interest_averaged_electrodes,3));
-spectrum_trial_45_region_of_interest_averaged_subjects = mean(spectrum_trial_45_region_of_interest_averaged_electrodes,3);
-spectrum_trial_45_region_of_interest_std_subjects = std(spectrum_trial_45_region_of_interest_averaged_electrodes,[],3)/sqrt(size(spectrum_trial_45_region_of_interest_averaged_electrodes,3));
-    % Getting lines of standard deviation above and under for plot
-        % Step 1: Create Lines
-spectrum_trial_20_RoI_above = spectrum_trial_20_region_of_interest_averaged_subjects + spectrum_trial_20_region_of_interest_std_subjects./2;
-spectrum_trial_20_RoI_below = spectrum_trial_20_region_of_interest_averaged_subjects - spectrum_trial_20_region_of_interest_std_subjects./2;
-spectrum_trial_45_RoI_above = spectrum_trial_45_region_of_interest_averaged_subjects + spectrum_trial_45_region_of_interest_std_subjects./2;
-spectrum_trial_45_RoI_below = spectrum_trial_45_region_of_interest_averaged_subjects - spectrum_trial_45_region_of_interest_std_subjects./2;
-        % Step 2: Create fill function
-inBetween_spectrum_20_RoI = [spectrum_trial_20_RoI_below(:); flipud(spectrum_trial_20_RoI_above(:))];
-inBetween_spectrum_45_RoI = [spectrum_trial_45_RoI_below(:); flipud(spectrum_trial_45_RoI_above(:))];
-    % Converting everything to dB
-spectrum_trial_20_region_of_interest_averaged_subjects_dB = 10*log10(spectrum_trial_20_region_of_interest_averaged_subjects);
-spectrum_trial_45_region_of_interest_averaged_subjects_dB = 10*log10(spectrum_trial_45_region_of_interest_averaged_subjects);
-inBetween_spectrum_20_RoI_dB = 10*log10(inBetween_spectrum_20_RoI);
-inBetween_spectrum_45_RoI_dB = 10*log10(inBetween_spectrum_45_RoI);
-    % Making Figure
-figure;
-plot(freqs_of_interest, spectrum_trial_20_region_of_interest_averaged_subjects_dB,'Color', color_20);
-hold on;
-plot(freqs_of_interest, spectrum_trial_45_region_of_interest_averaged_subjects_dB, 'Color', color_45);
-patch('XData',x2,'YData',inBetween_spectrum_20_RoI_dB,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
-patch('XData',x2,'YData',inBetween_spectrum_45_RoI_dB,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
-title({'Spectrum over Frontal Region','(20° vs. 45°)'});
-legend('20°', '45°');
-xlabel('Frequencies [Hz]');
-ylabel('Power [dB]');
-grid on;
- 
-% Fig 3: Spectrum over Parietal
-    % Retrieving over the brain Region of Interest: Parietal
-spectrum_trial_20_region_of_interest = select_frequencies_OI(spectrum_trial_20, 'parietal', {EEG_trial_data.(participants{end}).chanlocs(:).labels});
-spectrum_trial_45_region_of_interest = select_frequencies_OI(spectrum_trial_45, 'parietal', {EEG_trial_data.(participants{end}).chanlocs(:).labels});
-    % Get Average over electrodes of interest
-spectrum_trial_20_region_of_interest_averaged_electrodes = mean(spectrum_trial_20_region_of_interest, 1);
-spectrum_trial_45_region_of_interest_averaged_electrodes = mean(spectrum_trial_45_region_of_interest, 1);
-    % Get Average and Standard Deviation over Participants
-spectrum_trial_20_region_of_interest_averaged_subjects = mean(spectrum_trial_20_region_of_interest_averaged_electrodes,3);
-spectrum_trial_20_region_of_interest_std_subjects = std(spectrum_trial_20_region_of_interest_averaged_electrodes,[],3)/sqrt(size(spectrum_trial_20_region_of_interest_averaged_electrodes,3));
-spectrum_trial_45_region_of_interest_averaged_subjects = mean(spectrum_trial_45_region_of_interest_averaged_electrodes,3);
-spectrum_trial_45_region_of_interest_std_subjects = std(spectrum_trial_45_region_of_interest_averaged_electrodes,[],3)/sqrt(size(spectrum_trial_45_region_of_interest_averaged_electrodes,3));
-    % Getting lines of standard deviation above and under for plot
-        % Step 1: Create Lines
-spectrum_trial_20_RoI_above = spectrum_trial_20_region_of_interest_averaged_subjects + spectrum_trial_20_region_of_interest_std_subjects./2;
-spectrum_trial_20_RoI_below = spectrum_trial_20_region_of_interest_averaged_subjects - spectrum_trial_20_region_of_interest_std_subjects./2;
-spectrum_trial_45_RoI_above = spectrum_trial_45_region_of_interest_averaged_subjects + spectrum_trial_45_region_of_interest_std_subjects./2;
-spectrum_trial_45_RoI_below = spectrum_trial_45_region_of_interest_averaged_subjects - spectrum_trial_45_region_of_interest_std_subjects./2;
-        % Step 2: Create fill function
-inBetween_spectrum_20_RoI = [spectrum_trial_20_RoI_below(:); flipud(spectrum_trial_20_RoI_above(:))];
-inBetween_spectrum_45_RoI = [spectrum_trial_45_RoI_below(:); flipud(spectrum_trial_45_RoI_above(:))];
-    % Converting everything to dB
-spectrum_trial_20_region_of_interest_averaged_subjects_dB = 10*log10(spectrum_trial_20_region_of_interest_averaged_subjects);
-spectrum_trial_45_region_of_interest_averaged_subjects_dB = 10*log10(spectrum_trial_45_region_of_interest_averaged_subjects);
-inBetween_spectrum_20_RoI_dB = 10*log10(inBetween_spectrum_20_RoI);
-inBetween_spectrum_45_RoI_dB = 10*log10(inBetween_spectrum_45_RoI);
-    % Making Figure
-figure;
-plot(freqs_of_interest, spectrum_trial_20_region_of_interest_averaged_subjects_dB,'Color', color_20);
-hold on;
-plot(freqs_of_interest, spectrum_trial_45_region_of_interest_averaged_subjects_dB, 'Color', color_45);
-patch('XData',x2,'YData',inBetween_spectrum_20_RoI_dB,'FaceColor', color_20,'EdgeColor',color_20,'FaceAlpha', 0.2);
-patch('XData',x2,'YData',inBetween_spectrum_45_RoI_dB,'FaceColor', color_45,'EdgeColor',color_45,'FaceAlpha', 0.2);
-title({'Spectrum over Parietal Region','(20° vs. 45°)'});
-legend('20°', '45°');
-xlabel('Frequencies [Hz]');
-ylabel('Power [dB]');
-grid on;   
 
 
 plot_illustrative_conclusion_plots = true;
@@ -893,117 +848,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-%% 11. Comparing baseline-corrected signals
-
-plot_baselinecorrected = 1;
-
-% 11.1. Correcting the signals
-    
-disp('Computing permutation statistics of Baseline-Corrected Conditions')
-
-% Given that the spectrums are considered in linear and not decibel scale,
-% the signals are divided (and not substracted as was done before)
-
-% Converting initial spectrum into logarithmic scale
-spectrum_trial_20_dB = 10*log10(spectrum_trial_20);
-spectrum_trial_45_dB = 10*log10(spectrum_trial_45);
-
-% PAUL
-spectrum_trial_20_base_dB = 10*log10(spectrum_baseline_20);
-spectrum_trial_45_base_dB = 10*log10(spectrum_baseline_45);
-
-spectrum_trial_relative_20vbase_dB = spectrum_trial_20_dB - spectrum_trial_20_base_dB;
-spectrum_trial_relative_45vbase_dB =  spectrum_trial_45_dB - spectrum_trial_45_base_dB;
-
-
-% 11.2. Defining Permutation Options
-spectra_conditions = struct();
-spectra_conditions.BaselineModel = '';
-spectra_conditions.Chans = {EEG_trial_data.(participants{end}).chanlocs(:).labels};
-spectra_conditions.Freqs = 1:83;
-
-
-options = struct();
-options.fields = {'FoV20v110', 'FoV45v110'};
-options.model = 'classic';
-options.style = 'chanXfreq';
-options.ElecFile = file_electrode_positions;
-options.MaxDeg = 20;
-options.pairing = 'on';
-options.N_reps = 256;
-options.reusePerms = false;
-%options.permutations;
-options.removeSmallestClusters = false;
-
-if ~exist('clustered_stats_table_baseline_corrected','var')
-    % 11.3. Computing Permutation
-    [clustered_stats_table_baseline_corrected, statistical_clusters_baselinecorrected, stats_surrog_baselinecorrected, pairwise_stats_baselinecorrected, permutations_baselinecorrected] =...
-            NP_statTest(spectra_conditions, options);
-end
-    
-
-
-
-
-% 11.4. Computing and formatting data for heatmap  
- 
-% MAKING HEATMAP PLOTS
-% 11.4.1 Formating Data for Heatmaps
-data_heatmap_baselinecorrected = format_for_heatmap_baselinecorrected_dB(clustered_stats_table_baseline_corrected, statistical_clusters_baselinecorrected, spectrum_trial_relative_20vbase_dB, spectrum_trial_relative_45vbase_dB);
-
-% 11.4.1.bis. Re-organize by electrode groupe
-oragnize_alphabetically_electrodes = 1;
-[data_heatmap_baselinecorrected, new_electrode_labels] = organize_by_electrodes(data_heatmap_baselinecorrected, {EEG_trial_data.(participants{end}).chanlocs(:).labels}, oragnize_alphabetically_electrodes);
-
-% 11.4.2. Defining vector of frequencies:
-y = linspace(1,42,83);
-
-% 11.4.4. Making heatmaps:
-if plot_baselinecorrected
-    figure;
-    %heatmap_baselinecorrected = heatmap(new_electrode_labels,y, data_heatmap_baselinecorrected','Colormap', parula, 'ColorbarVisible', 'on', 'XLabel', 'Electrodes', 'YLabel', 'Frequencies [Hz]');    
-    myCmap = asymColorMapWhiteZero([-1.5,1.5], N_colors_standard);
-    heatmap_baselinecorrected = heatmap(new_electrode_labels,y, data_heatmap_baselinecorrected', 'Colormap', myCmap, 'ColorLimits', [-1.5,1.5], 'ColorbarVisible', 'on', 'XLabel', 'Electrodes', 'YLabel', 'Frequencies [Hz]');
-    heatmap_baselinecorrected.Title = '20° corrected with 20° baseline VS. 45° corrected with 45° baseline';
-    kept_frequencies = {'1','2','4','7.5','12','30'};
-    CustomYLabels = string(y);
-    CustomYLabels(find(~ismember(CustomYLabels, kept_frequencies)))=" ";
-    heatmap_baselinecorrected.YDisplayLabels = CustomYLabels;
-    grid off;
-    % Get underlying axis handle
-    origState = warning('query', 'MATLAB:structOnObject');
-    cleanup = onCleanup(@()warning(origState));
-    warning('off','MATLAB:structOnObject')
-    S = struct(heatmap_baselinecorrected); % Undocumented
-    ax = S.Axes;    % Undocumented
-    clear('cleanup')
-    % Remove grids
-    hm.GridVisible = 'off';
-    % Place lines around selected columns and row
-    % Assumes columns and rows are 1 unit in size!
-    row = [7, 14, 23, 59];
-    col = [50, 63, 77, 107];
-    arrayfun(@(x)xline(ax,x,'k-','Alpha',0.3),col-0.25);
-    arrayfun(@(x)yline(ax,x,'k-','Alpha',0.3),row-0.25);
-end
-
- 
-
-
-
-
-
-
 %% Helper functions
 
 function [clustered_stats_table, statistical_clusters, stats_surrog, pairwise_stats, permutations] = compute_permutations(fov1, fov2, spectrum_trial1, spectrum_trial2, commonOptions)
@@ -1030,7 +874,13 @@ end
 
 function plot_heatmap_baseline_or_condition(title_str, data_heatmap, electrode_labels, y, N_colors_standard)
     
-    colorLimits = [-10, 1]; % used to be colorLimits = [-1, 550]; for 20vs45 ?
+    % colorLimits = [-10, 1]; % used to be colorLimits = [-1, 550]; for 20vs45 ?
+    if contains(title_str, 'corrected')
+        colorLimits = [-1.5, 1.5]; % For baseline comparisons
+    else
+        colorLimits = [-10, 1];     % For general comparisons
+    end
+
 
     figure;
     myCmap = asymColorMapWhiteZero(colorLimits, N_colors_standard);
