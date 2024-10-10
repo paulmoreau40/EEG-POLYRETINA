@@ -100,10 +100,10 @@ for subject_ind = subject_inds
         [ALLEEG, EEG_prepared, CURRENTSET] = eeg_store(ALLEEG, EEG_prepared, CURRENTSET);
         % Prepare data:
         %[ALLEEG, EEG_prepared, CURRENTSET] = prepareData(ALLEEG, EEG_merged, CURRENTSET, subject, study_config);
+
     elseif ~skipPreproc && (~exist([N.searchFolder_2arch_rej N.preICAFile],'file') || overwritePreproc)
         EEG_prepared = pop_loadset('filename', N.preparedFile,'filepath', N.searchFolder_2);
         [ALLEEG, EEG_prepared, CURRENTSET] = eeg_store(ALLEEG, EEG_prepared, CURRENTSET);
-    else % No need to load the data
     end
 
     clear EEG_merged

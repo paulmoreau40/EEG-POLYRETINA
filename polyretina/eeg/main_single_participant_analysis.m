@@ -328,9 +328,7 @@ EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_basel
 
 
 
-
-
-%% 9. Permutation Analysis -- Multi Subject Analysis
+%% 8. Permutation Analysis -- Multi Subject Analysis
 
 %% Part 1: Condition VS. Baseline
 
@@ -367,7 +365,7 @@ if ~exist('clustered_stats_table_45vbase', 'var')
     compute_permutations('FoV45', [], spectrum_trial_45, spectrum_baseline_45, commonOptions);
 end
 
-% 9.3.1 Formating Data for Heatmaps
+% Formating Data for Heatmaps
 data_heatmap_20vbase = format_for_heatmap_conditionvbaseline(clustered_stats_table_20vbase, statistical_clusters_20vbase, spectrum_trial_20, spectrum_baseline_20);
 data_heatmap_45vbase = format_for_heatmap_conditionvbaseline(clustered_stats_table_45vbase, statistical_clusters_45vbase, spectrum_trial_45, spectrum_baseline_45);
 
@@ -400,9 +398,9 @@ plot_heatmap_baseline_or_condition('20° FoV vs. 45° FoV', data_heatmap_condition
 
 
 
-%% 11. Comparing baseline-corrected signals
+%% 9. Comparing baseline-corrected signals
 
-% 11.1. Correcting the signals
+% Correcting the signals
     
 % Given that the spectrums are considered in decibel scale,
 % the signals are substracted
@@ -442,9 +440,9 @@ plot_heatmap_baseline_or_condition('20° corrected with 20° baseline VS. 45° corr
 
 
 
-%% 12. Making Additional Plots to Accompany Heatmaps
+%% 10. Making Additional Plots to Accompany Heatmaps
 
-% 12.1 SPECTRA : Condition v Baseline & Condition v Condition
+% 10.1 SPECTRA : Condition v Baseline & Condition v Condition
 
 plot_spectrum_all('parietal', 20, [], spectrum_trial_20, spectrum_baseline_20, participants, EEG_trial_data, color_20, color_baseline, freqs_of_interest, x2, 'trial_vs_baseline');
 plot_spectrum_all('occipital', 20, [], spectrum_trial_20, spectrum_baseline_20, participants, EEG_trial_data, color_20, color_baseline, freqs_of_interest, x2, 'trial_vs_baseline');
@@ -460,7 +458,7 @@ plot_spectrum_all('frontal', 20, 45, spectrum_trial_20, spectrum_trial_45, parti
 
 
 
-% 12.2 TOPOPLOTS : Condition v Condition (and Condition normalised by baseline)
+% 10.2 TOPOPLOTS : Condition v Condition (and Condition normalised by baseline)
 
 % AVERAGE SPECTRA FOR BOTH TRIALS AND BASELINES OVER ALL SUBJECTS
 spectrum_trial_20_avg = mean(spectrum_trial_20, 3);

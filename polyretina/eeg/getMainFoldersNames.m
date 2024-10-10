@@ -2,10 +2,10 @@ function [main, raw, elec, raw_EEGLAB, preproc, SS_ana, MS_ana, Figs, MetaFile, 
     getMainFoldersNames(user)
 % Define here the folders access so there is only one place to change
 % Input:
-%   user        - permits to specify the user for the main path (Alex or JB)
+%   user        - permits to specify the user for the main path
 
 switch lower(user)
-    case 'default'
+    case 'default' % should work automatically
         base_path = fileparts(fileparts(pwd));
         main = [fullfile(base_path, 'data', 'analysis'), filesep];
         Figs = [fullfile(base_path, 'figures'), filesep];
