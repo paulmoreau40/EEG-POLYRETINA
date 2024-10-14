@@ -109,7 +109,7 @@ pip install -r requirements.txt
 
 There are several types of data for different purposes: EEG data, EEG channels information, and metadata, with details on file naming conventions, formats, and directory structures.
 
-### 1. EEG Data
+### EEG Data
 The EEG data for each participant should follow a specific naming convention and file structure. Multiple blocks can be present for each participant, and all EEG data files must be stored in a predefined directory.
 
 - **File format**: `.xdf`
@@ -125,7 +125,7 @@ The EEG data for each participant should follow a specific naming convention and
   `sub-P001_block001_1.xdf`  
   `sub-P001_block002_1.xdf`
 
-### 2. EEG Channels Information
+### EEG Channels Information
 In addition to the EEG data, each participant folder must contain a file that describes the EEG channels and their coordinates.
 - **File format**: `.elc`
 - **File naming convention**: The channels file has a fixed name and is the same for all participants. It must be named:  
@@ -138,7 +138,7 @@ In addition to the EEG data, each participant folder must contain a file that de
 - **Configuration**: If a different file name is needed, it can be modified in `configEEGPOL.m` by changing the variable `study_config.channel_locations_filename`.
 
 
-### 3. Metadata
+### Metadata
 The metadata provides additional information about each participant and must be supplied in a specific Excel file format.
 
 - **File format**: `.xlsx`
