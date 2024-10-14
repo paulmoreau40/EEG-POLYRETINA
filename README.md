@@ -3,7 +3,7 @@
 ## **1. Introduction**
 This repository contains an EEG analysis pipeline developed for investigating the impact of varying fields of view on the effectiveness of the POLYRETINA retinal implant. The pipeline is based on the BeMoBIL framework and is designed to handle preprocessing, analysis, and visualisation of EEG data. The POLYRETINA project aims to assess how different visual angles influence cognitive load and user performance, with the ultimate goal of enhancing autonomy for individuals with acquired blindness.
 
-The project is conducted at the Institut de la Vision (Paris, FRANCE), within the Aging in Vision and Action Laboratory (AVA Lab).
+The project is conducted within the Aging in Vision and Action Laboratory (AVA Lab) at the Institut de la Vision (Paris, FRANCE), in collaboration with the École Polytechnique Fédérale de Lausanne (EPFL - Lausanne, SWITZERLAND).
 
 ## **2. Installation**
 
@@ -105,7 +105,66 @@ pip install -r requirements.txt
     - **`keptComponents_POL.m`**: Lists Independent Components that were manually selected (filled by the user).
 
 
-## **4. Authors, Credits, and Acknowledgments**
+## **4. Data Requirements**
+
+There are several types of data for different purposes: EEG data, EEG channels information, and metadata, with details on file naming conventions, formats, and directory structures.
+
+### 1. EEG Data
+The EEG data for each participant should follow a specific naming convention and file structure. Multiple blocks can be present for each participant, and all EEG data files must be stored in a predefined directory.
+
+- **File format**: `.xdf`
+- **File naming convention**: Files must be named as follows:  
+  `sub-<ParticipantID>_block<blockNumber>_<session>.xdf`  
+  Example: `sub-P001_block001_1.xdf` (first block, first session for participant P001).
+  
+- **Directory structure**: EEG data files should be stored in the following path:  
+  `\data\analysis\0_raw-data\<ParticipantID>`  
+  Example: EEG data for participant P001 should be stored in `\data\analysis\0_raw-data\P001`.
+
+- **Multiple blocks**: If multiple blocks are recorded for a participant, each block should have a unique identifier, for example:  
+  `sub-P001_block001_1.xdf`  
+  `sub-P001_block002_1.xdf`
+
+### 2. EEG Channels Information
+In addition to the EEG data, each participant folder must contain a file that describes the EEG channels and their coordinates.
+- **File format**: `.elc`
+- **File naming convention**: The channels file has a fixed name and is the same for all participants. It must be named:  
+  `CA-213_EOG.elc`
+
+- **Directory structure**: The channels file must be present in the following directory:  
+  `\data\analysis\0_raw-data\<ParticipantID>`  
+  Example: The channels file should be stored in all participant folders, such as `\data\analysis\0_raw-data\P001`.
+
+- **Configuration**: If a different file name is needed, it can be modified in `configEEGPOL.m` by changing the variable `study_config.channel_locations_filename`.
+
+
+### 3. Metadata
+The metadata provides additional information about each participant and must be supplied in a specific Excel file format.
+
+- **File format**: `.xlsx`
+- **File name**: `Polyretina_meta.xlsx`
+- **Directory structure**: The metadata file should be located in:  
+  `\data\analysis`  
+  Note: The metadata file can be renamed in the code (for example, via the function `getMainFoldersNames.m`).
+
+- **Metadata structure**: The Excel file should contain a sheet named **SubjectInfo**, and the columns must follow this structure:
+
+  | id   | badElectrodes                  | missingData | excluded |
+  |------|--------------------------------|-------------|----------|
+  | P001 | L1,LC1,LD1,LL1,R1,RC1,RD1,RR1  | ""          | No       |
+  | P002 | L1,LC1,LD1,LL1,R1,RC1,RD1,RR1  | ""          | No       |
+  | P003 | L1,LC1,LD1,LL1,R1,RC1,RD1,RR1  | ""          | No       |
+  | P004 | L1,LC1,LD1,LL1,R1,RC1,RD1,RR1  | ""          | Yes      |
+
+- **Columns**:
+  - `id`: Participant ID, following the format `P<ParticipantNumber>`.
+  - `badElectrodes`: List of electrodes marked as bad for the corresponding participant.
+  - `missingData`: If there is missing data, it will be noted here (empty string `""` means no missing data).
+  - `excluded`: Indicates whether the participant has been excluded from the analysis (`Yes` or `No`).
+
+
+
+## **5. Authors, Credits, and Acknowledgments**
 - Authors and collaborators: Paul Moreau, Antonin Duret, Sandrine Hinrichs, Denis Sheynikhovich, Angelo Arleo, Diego Ghezzi
 - Research Labs:
     - [Aging in Vision and Action, Sorbonne Université / Institut de la Vison / INSERM / CNRS](https://www.institut-vision.org/en/research/aging-vision-and-action#:~:text=Our%20team%20analyzes%20the%20aging,research%20and%20innovative%20technology%20transfer.)
@@ -113,9 +172,7 @@ pip install -r requirements.txt
     - [Ecole Polytechnique Fédérale de Lausanne, EPFL](https://www.epfl.ch/fr/)
 - Credits: The EEG analysis pipeline is based on the [BeMoBIL framework](https://www.tu.berlin/en/bpn/research/berlin-mobile-brain-body-imaging-lab), with adaptations for the POLYRETINA field of view study.
 
-## **5. References**
+## **6. References**
 Bibliography: 
 - [The BeMoBIL Pipeline for automated analyses of multimodal mobile brain and body imaging data (Klug et al., 2022)](https://www.biorxiv.org/content/10.1101/2022.09.29.510051v2.abstract)
 - [POLYRETINA restores light responses in vivo in blind Göttingen minipigs (Vagni et al., 2022)](https://www.nature.com/articles/s41467-022-31180-z)
-
-
