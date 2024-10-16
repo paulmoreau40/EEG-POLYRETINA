@@ -70,10 +70,11 @@ pip install -r requirements.txt
 │       └── main_single_participant_analysis.m
 │       └── ...
 │
-├── /figures/                 # Figures produced during the processing steps
+├── /figures/                  # Figures produced during the processing steps
 │   ├── /AutoBadSampsCleaning/
 │   ├── /ChannelsImport/
 │   └── /PREP_distributions/
+│   └── /AnalysisPlots/        # Outputs of the analysis (heatmaps, power spectra, topoplots)
 │
 ├── /toolboxes/                # Contains external toolboxes and dependencies
 │   ├── /bemobil_pipeline0.2/  # Functions from the BeMoBIL pipeline
