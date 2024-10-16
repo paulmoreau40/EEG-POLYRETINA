@@ -1,6 +1,4 @@
 *.asv
-*.jpg
-*.png
 /toolboxes/eeglab2024.0
 *.DS_Store
 /polyretina-env
@@ -9,3 +7,5 @@
 /outputs/
 !data/analysis/0_raw-data/P001/CA-213_EOG.elc
 *.fig
+*.jpg
+/figures/Power spectrum comparison

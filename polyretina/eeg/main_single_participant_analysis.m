@@ -254,6 +254,8 @@ legend('Black Baseline', 'Edge Baseline');
 title('Absolute Spectrum for Brain Region Electrodes Across FoV');
 
 
+figuresFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'figures', 'AnalysisPlots');
+saveas(gcf, fullfile(figuresFolder, 'SpectrumCoarseBaselinesComparison.png'));
 
 
 
@@ -324,11 +326,6 @@ title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(1 b
 bool_plot = 0; bool_all_electrodes = 1; bool_export = 0;
 
 EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, bool_plot, bool_all_electrodes, bool_export);
-
-
-
-
-
 
 
 
