@@ -251,11 +251,9 @@ grid on;
 xlabel('Frequencies [Hz]');
 ylabel('Power [dB]');
 legend('Black Baseline', 'Edge Baseline');
-title('Absolute Spectrum for Brain Region Electrodes Across FoV');
+title("Absolute Spectrum for " + brain_region_name + " Electrodes Across FoV");
 
-
-figuresFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'figures', 'AnalysisPlots');
-saveas(gcf, fullfile(figuresFolder, 'SpectrumCoarseBaselinesComparison.png'));
+saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'SpectrumCoarseBaselinesComparison.png'));
 
 
 
@@ -282,6 +280,8 @@ xlabel('Frequencies [Hz]');
 ylabel('Power [dB]');
 legend('20°','45°');
 title({['Absolute Spectrum for ' brain_region_name ' Electrodes' ],'Across FoV'});
+saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'SpectrumAveragedTrials.png'));
+
 
 % Plot of every single trial line
 figure;
@@ -298,6 +298,7 @@ grid on;
 xlabel('Frequencies [Hz]');
 ylabel('Power [dB]');
 title(['Absolute Spectrum for ' brain_region_name ' Electrodes (all trials)']);
+saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'SpectrumAllTrials.png'));
 
 % Plotting absolute spectra OF BASELINE for each FoV, averaged over all trials and all electrodes of brain RoI
 figure;
@@ -314,6 +315,7 @@ grid on;
 xlabel('Frequencies [Hz]');
 ylabel('Power [dB]');
 title({['Absolute Baseline Spectrum for ' brain_region_name ' Electrodes'],'(1 baseline / trial)'});
+saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'SpectrumAllBaselines.png'));
 
 
 
@@ -377,8 +379,8 @@ data_heatmap_45vbase = format_for_heatmap_conditionvbaseline(clustered_stats_tab
 [data_heatmap_20vbase, ~] = organize_by_electrodes(data_heatmap_20vbase, {EEG_trial_data.(participants{end}).chanlocs(:).labels}, organise_alphabetically_electrodes);
 [data_heatmap_45vbase, new_electrode_labels] = organize_by_electrodes(data_heatmap_45vbase, {EEG_trial_data.(participants{end}).chanlocs(:).labels}, organise_alphabetically_electrodes);
 
-plot_heatmap_baseline_or_condition('20° FoV vs. Baseline', data_heatmap_20vbase, new_electrode_labels, y, N_colors_standard);
-plot_heatmap_baseline_or_condition('45° FoV vs. Baseline', data_heatmap_45vbase, new_electrode_labels, y, N_colors_standard);
+plot_heatmap_baseline_or_condition('20° FoV vs. Baseline (permutation testing)', data_heatmap_20vbase, new_electrode_labels, y, N_colors_standard, "20vsBaseline");
+plot_heatmap_baseline_or_condition('45° FoV vs. Baseline (permutation testing)', data_heatmap_45vbase, new_electrode_labels, y, N_colors_standard, "45vsBaseline");
 
 
 
@@ -393,7 +395,7 @@ data_heatmap_conditionvcondition = format_for_heatmap_conditionvcondition_anova(
 
 [data_heatmap_conditionvcondition, new_electrode_labels] = organize_by_electrodes(data_heatmap_conditionvcondition, {EEG_trial_data.(participants{end}).chanlocs(:).labels}, 1);
 
-plot_heatmap_baseline_or_condition('20° FoV vs. 45° FoV', data_heatmap_conditionvcondition, new_electrode_labels, y, N_colors_standard);
+plot_heatmap_baseline_or_condition('20° FoV vs. 45° FoV (permutation testing)', data_heatmap_conditionvcondition, new_electrode_labels, y, N_colors_standard, "20vs45");
 
 
 
@@ -417,7 +419,8 @@ data_heatmap_baselinecorrected = format_for_heatmap_baselinecorrected_dB(cluster
 
 [data_heatmap_baselinecorrected, new_electrode_labels] = organize_by_electrodes(data_heatmap_baselinecorrected, {EEG_trial_data.(participants{end}).chanlocs(:).labels}, organise_alphabetically_electrodes);
 
-plot_heatmap_baseline_or_condition('20° corrected with 20° baseline VS. 45° corrected with 45° baseline', data_heatmap_baselinecorrected, new_electrode_labels, y, N_colors_standard);
+plot_heatmap_baseline_or_condition('20° corrected with 20° baseline VS. 45° corrected with 45° baseline (permutation testing)', data_heatmap_baselinecorrected, new_electrode_labels, ...
+    y, N_colors_standard, "20vs45corrected");
 
 
 
@@ -524,13 +527,13 @@ function [clustered_stats_table, statistical_clusters, stats_surrog, pairwise_st
     [clustered_stats_table, statistical_clusters, stats_surrog, pairwise_stats, permutations] = NP_statTest(spectra_conditions, options);
 end
 
-function plot_heatmap_baseline_or_condition(title_str, data_heatmap, electrode_labels, y, N_colors_standard)
+function plot_heatmap_baseline_or_condition(title_str, data_heatmap, electrode_labels, y, N_colors_standard, label)
     
     % colorLimits = [-10, 1]; % used to be colorLimits = [-1, 550]; for 20vs45 ?
     if contains(title_str, 'corrected')
         colorLimits = [-1.5, 1.5]; % For baseline comparisons
     else
-        colorLimits = [-10, 1];    % For general comparisons
+        colorLimits = [-10, 10];    % For general comparisons
     end
 
     figure;
@@ -554,6 +557,8 @@ function plot_heatmap_baseline_or_condition(title_str, data_heatmap, electrode_l
     col = [50, 63, 77, 107];
     arrayfun(@(x) xline(ax, x, 'k-', 'Alpha', 0.3), col - 0.25);
     arrayfun(@(x) yline(ax, x, 'k-', 'Alpha', 0.3), row - 0.25);
+
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), "Heatmap" + label + ".png"));
 end
 
 
