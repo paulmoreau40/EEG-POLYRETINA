@@ -419,7 +419,7 @@ data_heatmap_baselinecorrected = format_for_heatmap_baselinecorrected_dB(cluster
 
 [data_heatmap_baselinecorrected, new_electrode_labels] = organize_by_electrodes(data_heatmap_baselinecorrected, {EEG_trial_data.(participants{end}).chanlocs(:).labels}, organise_alphabetically_electrodes);
 
-plot_heatmap_baseline_or_condition('20° corrected with 20° baseline VS. 45° corrected with 45° baseline (permutation testing)', data_heatmap_baselinecorrected, new_electrode_labels, ...
+plot_heatmap_baseline_or_condition('Baseline-corrected 20° VS. baseline-corrected 45° (permutation testing)', data_heatmap_baselinecorrected, new_electrode_labels, ...
     y, N_colors_standard, "20vs45corrected");
 
 
@@ -429,7 +429,7 @@ plot_heatmap_baseline_or_condition('20° corrected with 20° baseline VS. 45° corr
 
 
 
-
+%SALUT PAUL LA PIOCHE :) travaille esclave
 %% 7. ADDITIONAL PLOTS FOR ALL REGIONS
 
 % 7.1 SPECTRA : Condition v Baseline & Condition v Condition
@@ -603,15 +603,19 @@ function plot_spectrum_all(region, angle1, angle2, spectrum1, spectrum2, partici
 
     if strcmp(comparison_type, 'trial_vs_baseline')
         title(['Spectrum over ' region ' Region',' (' num2str(angle1) '° vs. Baseline of ' num2str(angle1) '°)']);
+        filename = "Spectrum" + num2str(angle1) + "vsBaseline_" + region;
         legend([num2str(angle1) '°'], ['Baseline ' num2str(angle1) '°']);
     elseif strcmp(comparison_type, 'trial_vs_trial')
         title(['Spectrum over ' region ' Region',' (' num2str(angle1) '° vs. ' num2str(angle2) '°)']);
         legend([num2str(angle1) '°'], [num2str(angle2) '°']);
+        filename = "Spectrum" + num2str(angle1) + "vs" + num2str(angle2) + region;
     end
 
     xlabel('Frequencies [Hz]');
     ylabel('Power [dB]');
     grid on;
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), filename + ".png"));
+
 end
 
 
