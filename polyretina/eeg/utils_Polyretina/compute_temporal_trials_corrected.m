@@ -149,7 +149,8 @@ if bool_plot
     grid on;
     hold off;
     
-    
+    %saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_20vs45.png'));
+
     
     
     
@@ -178,11 +179,9 @@ if bool_plot
     % PLOT FOR 45° TRIALS (5 participants)
     figure;
     hold on;
-    
     for p = 1:size(mean_trials_45, 2)
         plot(time_points, mean_trials_45(:, p), 'Color', color_order(p, :), 'LineWidth', 2);
     end
-    
     xlabel('Time (s)');
     ylabel('Amplitude');
     legend(participant_ids, 'Location', 'best');
