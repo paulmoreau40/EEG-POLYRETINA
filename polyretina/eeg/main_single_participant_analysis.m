@@ -324,8 +324,9 @@ saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlo
 % data from the last 2 seconds of which trials to see if different patterns
 % show (as cognitive load could reach a maximum towards the end of the
 % trials). Every trial is normalised by its corresponding baseline
+% -> temporal trials, spectrograms, temporal boxplots
 
-bool_plot = 0; bool_all_electrodes = 1; bool_export = 0;
+bool_plot = 1; bool_all_electrodes = 1; bool_export = 0;
 
 EEG_trial_data2sec = compute_temporal_trials_corrected(EEG_trial_data, EEG_baseline_data, brain_region_chosen, bool_plot, bool_all_electrodes, bool_export);
 
@@ -429,7 +430,7 @@ plot_heatmap_baseline_or_condition('Baseline-corrected 20° VS. baseline-correcte
 
 
 
-%SALUT PAUL LA PIOCHE :) travaille esclave
+
 %% 7. ADDITIONAL PLOTS FOR ALL REGIONS
 
 % 7.1 SPECTRA : Condition v Baseline & Condition v Condition
