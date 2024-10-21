@@ -40,8 +40,8 @@ end
 corrected_trials.metaInfo = EEG_trial_data.metaInfo;
 corrected_trials.metaInfo(strcmp({corrected_trials.metaInfo.participant_id}, 'P009') & [corrected_trials.metaInfo.BlockIndex] == 37) = [];
 
+% SELECTING ELECTRODES OF INTEREST
 if ~bool_all_electrodes
-    % SELECTING ELECTRODES OF INTEREST
     disp('Keeping only electrodes of brain region of interest...')
     if ischar(electrodes_of_interest)
         if strcmp(electrodes_of_interest, 'all')
@@ -86,7 +86,7 @@ for p = 1:length(participant_ids)
     trials_20_data = trial_data(:, :, trials_20_indices);
     trials_45_data = trial_data(:, :, trials_45_indices);
 
-    trials_20.(participant_id) = squeeze(mean(trials_20_data, 1));  % Average over electrodes ()
+    trials_20.(participant_id) = squeeze(mean(trials_20_data, 1));  % Average over electrodes
     trials_45.(participant_id) = squeeze(mean(trials_45_data, 1));
 
     % STORE IN MEGA OUTPUT STRUCTURE
@@ -123,8 +123,8 @@ corrected_trials.std_45_all_participants = std_45_all_participants;
 
 if bool_plot
     % PLOT MEAN 45 AND 20 WITH STD
-    color_20 = [0.1, 0.6, 0.8]; % Color for 20° trials
-    color_45 = [0.8, 0.4, 0.0]; % Color for 45° trials
+    color_20 = [0.1, 0.6, 0.8]; 
+    color_45 = [0.8, 0.4, 0.0];
     
     time_points = linspace(0, 2, size(mean_20_all_participants, 1)); 
     figure;
@@ -149,7 +149,7 @@ if bool_plot
     grid on;
     hold off;
     
-    %saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_20vs45.png'));
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_20vs45_participantsAveraged.png'));
 
     
     
@@ -159,7 +159,7 @@ if bool_plot
     
     
     
-    % PLOT FOR 20° TRIALS (5 participants)
+    % PLOT TEMPORAL TRIALS AVERAGED FOR EACH PARTICIPANT (20° FOV)
     figure;
     hold on;
     color_order = lines(size(mean_trials_20, 2)); % Generate colors for each participant
@@ -174,9 +174,11 @@ if bool_plot
     title('Mean Trials (20°) for Each Participant');
     grid on;
     hold off;
+
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_20_eachParticipant.png'));
     
     
-    % PLOT FOR 45° TRIALS (5 participants)
+    % PLOT TEMPORAL TRIALS AVERAGED FOR EACH PARTICIPANT (45° FOV)
     figure;
     hold on;
     for p = 1:size(mean_trials_45, 2)
@@ -189,13 +191,14 @@ if bool_plot
     grid on;
     hold off;
     
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_45_eachParticipant.png'));
     
     
     
     
     
     
-    % MEAN AND STD OF ALL TRIALS ACROSS ALL PARTICIPANTS
+    % % PLOT MEAN TEMPORAL TRIALS FOR 20 AND 45°, AVERAGED ACROSS ALL TRIALS AND PARTICIPANTS
     all_trials_20 = [];
     all_trials_45 = [];
     
@@ -239,20 +242,21 @@ if bool_plot
     grid on;
     hold off;
     
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_20vs45_trialsAveraged.png'));
     
     
     
     
     
-    % SPECTROGRAM ANALYSIS AND PLOT
+    % SPECTROGRAM OF AVERAGED TRIALS
     
     srate = EEG_baseline_data.(participant_ids{1}).srate;
-    n_samples = 500; % Nombre d'échantillons ajustés
+    n_samples = 500;
     mean_20_adjusted = mean_20_all_participants(1:n_samples);
     mean_45_adjusted = mean_45_all_participants(1:n_samples);
     
-    window_size = round(0.25 * srate); % Taille de la fenêtre en échantillons
-    overlap_size = round(0.125 * srate); % Chevauchement de 50%
+    window_size = round(0.25 * srate);
+    overlap_size = round(0.125 * srate);
     
     [s_20, f_20, t_20] = spectrogram(mean_20_adjusted, hamming(window_size), overlap_size, [], srate, 'yaxis');
     S_20_dB = 10*log10(abs(s_20));
@@ -262,70 +266,62 @@ if bool_plot
     
     diff_spectrogram = S_20_dB - S_45_dB;
     
-    % Plot
     figure;
     
-    % Spectrogramme pour 20° trials
+    % Spectrogram for 20° trials
     subplot(3,1,1);
     imagesc(t_20, f_20, S_20_dB);
     axis xy;
-    ylim([0 45]); % Limite de 0 à 45 Hz
+    ylim([0 45]);
     title('Spectrogram for 20° Trials');
     colorbar;
     xlabel('Time (s)');
     ylabel('Frequency (Hz)');
     
-    % Spectrogramme pour 45° trials
+    % Spectrogram for 45° trials
     subplot(3,1,2);
     imagesc(t_45, f_45, S_45_dB);
     axis xy;
-    ylim([0 45]); % Limite de 0 à 45 Hz
+    ylim([0 45]);
     title('Spectrogram for 45° Trials');
     colorbar;
     xlabel('Time (s)');
     ylabel('Frequency (Hz)');
     
-    % Différence entre les spectrogrammes
+    % Difference between spectrogram
     subplot(3,1,3);
     imagesc(t_20, f_20, diff_spectrogram);
     axis xy;
-    ylim([0 45]); % Limite de 0 à 45 Hz
+    ylim([0 45]);
     title('Difference between 20° and 45° Trials');
     colorbar;
     xlabel('Time (s)');
     ylabel('Frequency (Hz)');
     
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_20vs45_spectrogram_averagedTrials.png'));
     
     
     
     
+    % SPECTROGRAM FOR EACH TRIAL, THEN  AVERAGE OF SPECTROGRAMS (instead of spectrogram of
+    % averaged trials)
     
-    % MEAN OF SPECTROGRAMS OF EACH TRIAL
-    
-    % Paramètres
-    window_size = round(0.25 * srate);  % Fenêtre de 0.25 seconde
-    overlap_size = round(0.125 * srate);  % Chevauchement de 50%
-    
-    % Initialiser les matrices de somme pour les spectrogrammes
     S_sum_20 = [];
     S_sum_45 = [];
     
-    % Calculer et accumuler les spectrogrammes pour les trials à 20°
+    % Individual spectrogram for each 20° trial
     for i = 1:size(all_trials_20, 2)
         [s_20, f_20, t_20] = spectrogram(all_trials_20(:, i), hamming(window_size), overlap_size, [], srate);
-        S_20_dB = 10 * log10(abs(s_20));  % Convertir en dB
+        S_20_dB = 10 * log10(abs(s_20));  % Convert in dB
         
         if isempty(S_sum_20)
             S_sum_20 = S_20_dB;
         else
-            S_sum_20 = S_sum_20 + S_20_dB;  % Accumuler
+            S_sum_20 = S_sum_20 + S_20_dB;
         end
     end
-    
-    % Calculer la moyenne des spectrogrammes pour les trials à 20°
-    S_mean_20_dB = S_sum_20 / size(all_trials_20, 2);
-    
-    % Calculer et accumuler les spectrogrammes pour les trials à 45°
+        
+    % Individual spectrogram for each 45° trial
     for i = 1:size(all_trials_45, 2)
         [s_45, f_45, t_45] = spectrogram(all_trials_45(:, i), hamming(window_size), overlap_size, [], srate);
         S_45_dB = 10 * log10(abs(s_45));  % Convertir en dB
@@ -337,63 +333,60 @@ if bool_plot
         end
     end
     
-    % Calculer la moyenne des spectrogrammes pour les trials à 45°
-    S_mean_45_dB = S_sum_45 / size(all_trials_45, 2);
+    S_mean_20_dB = S_sum_20 / size(all_trials_20, 2); % Averaged spectrogram (20°)
+    S_mean_45_dB = S_sum_45 / size(all_trials_45, 2); % Averaged spectrogram (45°)
     
-    % Calculer la différence entre les spectrogrammes moyens
+    % Diff between averaged spectrogram
     diff_spectrogram = S_mean_20_dB - S_mean_45_dB;
     
-    % Limiter la gamme de fréquences (0 à 45 Hz)
-    freq_limit = 45;
-    freq_indices_20 = find(f_20 <= freq_limit);  % Indices des fréquences <= 45 Hz
-    freq_indices_45 = find(f_45 <= freq_limit);  % Indices des fréquences <= 45 Hz
+    freq_indices_20 = find(f_20 <= 45); 
+    freq_indices_45 = find(f_45 <= 45);
     
-    % Extraire les données correspondant aux fréquences limitées pour chaque spectrogramme
     S_mean_20_limited = S_mean_20_dB(freq_indices_20, :);
     S_mean_45_limited = S_mean_45_dB(freq_indices_45, :);
     diff_spectrogram_limited = diff_spectrogram(freq_indices_20, :);
     
-    % Trouver les limites min et max des spectrogrammes dans la gamme de fréquences limitée pour chaque subplot
+    % Find min and max limits of spectrogram for each subplot, in the studied frequency range
     clim_20 = [min(S_mean_20_limited(:)), max(S_mean_20_limited(:))];
     clim_45 = [min(S_mean_45_limited(:)), max(S_mean_45_limited(:))];
     clim_diff = [min(diff_spectrogram_limited(:)), max(diff_spectrogram_limited(:))];
     
-    % Tracé des spectrogrammes avec les échelles de couleurs spécifiques à chaque subplot
     figure;
     
-    % Spectrogramme pour les trials à 20°
+    % Spectrogram for 20° trials
     subplot(3,1,1);
     imagesc(t_20, f_20(freq_indices_20), S_mean_20_limited);
     axis xy;
-    ylim([0 freq_limit]);  % Limiter de 0 à 45 Hz
+    ylim([0 45]); 
     title('Mean Spectrogram for 20° Trials');
     colorbar;
-    clim(clim_20);  % Limiter la colorbar spécifiquement pour 20°
+    clim(clim_20);  % Limit the colorbar for the 20° spectrogram
     xlabel('Time (s)');
     ylabel('Frequency (Hz)');
     
-    % Spectrogramme pour les trials à 45°
+    % Spectrogram for 45° trials
     subplot(3,1,2);
     imagesc(t_45, f_45(freq_indices_45), S_mean_45_limited);
     axis xy;
-    ylim([0 freq_limit]);  % Limiter de 0 à 45 Hz
+    ylim([0 45]); 
     title('Mean Spectrogram for 45° Trials');
     colorbar;
-    clim(clim_45);  % Limiter la colorbar spécifiquement pour 45°
+    clim(clim_45); 
     xlabel('Time (s)');
     ylabel('Frequency (Hz)');
     
-    % Différence des spectrogrammes
+    % Spectrogram difference
     subplot(3,1,3);
     imagesc(t_20, f_20(freq_indices_20), diff_spectrogram_limited);
     axis xy;
-    ylim([0 freq_limit]);  % Limiter de 0 à 45 Hz
+    ylim([0 45]);  
     title('Difference of Spectrograms (20° - 45°)');
     colorbar;
-    clim(clim_diff);  % Limiter la colorbar spécifiquement pour la différence
+    clim(clim_diff);
     xlabel('Time (s)');
     ylabel('Frequency (Hz)');
     
+    saveas(gcf, fullfile(fullfile(fileparts(fileparts(pwd)), 'figures', 'AnalysisPlots'), 'Last2Seconds_20vs45_averagedSpectrograms.png'));
     
     
     
@@ -408,7 +401,7 @@ if bool_plot
     
     
     
-    % PLOT ALL TRIALS
+    % PLOT ALL TEMPORAL TRIALS
     figure;
     
     % Subplot for 20° trials
@@ -441,7 +434,7 @@ if bool_plot
     
     
     
-    % BOXPLOT OF TEMPORAL DATA ACROSS TIME
+    % BOXPLOT OF TEMPORAL DATA ALONG TIME
     figure;
     hold on;
     
