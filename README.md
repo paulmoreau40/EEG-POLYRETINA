@@ -72,7 +72,7 @@ pip install -r requirements.txt
 │
 ├── /figures/ 
 │   ├── AnalysisPlots               # Outputs of the analysis (heatmaps, power spectra, topoplots)
-│   ├── BehaviouralAnalysisPlots    # Outputs of the behavioural analysis (barplots and boxplots of success rate and trial time)
+│   ├── BehaviouralAnalysisPlots    # Outputs of the behavioural analysis (success rate and trial time)
 │   ├── ProcessingPlots             # Figures produced during the processing steps
 │       ├── /AutoBadSampsCleaning/
 │       ├── /ChannelsImport/
