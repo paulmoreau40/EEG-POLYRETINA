@@ -59,29 +59,31 @@ pip install -r requirements.txt
 **Summary of the folders structure**
 ```
 ├── /data/
-│   └── /analysis/             # Data for EEG analysis (raw, preprocessed, processed, analysis)
-│   └── /behavioural/          # Data for behavioural analysis (trial time, success rate)
+│   └── /analysis/                  # Data for EEG analysis (raw, preprocessed, processed, analysis)
+│   └── /behavioural/               # Data for behavioural analysis (trial time, success rate)
 │
-├── /polyretina/               # Functions and codes
-│   ├── /behavioural/          # Contains Jupyter notebooks for behavioral analysis
+├── /polyretina/                    # Functions and codes
+│   ├── /behavioural/               # Contains Jupyter notebooks for behavioral analysis
 │   │   └── analysis_notebook.ipynb
-│   ├── /eeg/                  # Contains EEG-related functions and MATLAB scripts
+│   ├── /eeg/                       # Contains EEG-related functions and MATLAB scripts
 │       ├── main_preprocessing.m
-│       └── main_single_participant_analysis.m
+│       ├── main_single_participant_analysis.m
 │       └── ...
 │
-├── /figures/                  # Figures produced during the processing steps
-│   ├── /AutoBadSampsCleaning/
-│   ├── /ChannelsImport/
-│   └── /PREP_distributions/
-│   └── /AnalysisPlots/        # Outputs of the analysis (heatmaps, power spectra, topoplots)
+├── /figures/ 
+│   ├── AnalysisPlots               # Outputs of the analysis (heatmaps, power spectra, topoplots)
+│   ├── BehaviouralAnalysisPlots    # Outputs of the behavioural analysis (barplots and boxplots of success rate and trial time)
+│   ├── ProcessingPlots             # Figures produced during the processing steps
+│       ├── /AutoBadSampsCleaning/
+│       ├── /ChannelsImport/
+│       └── /PREP_distributions/
 │
-├── /toolboxes/                # Contains external toolboxes and dependencies
-│   ├── /bemobil_pipeline0.2/  # Functions from the BeMoBIL pipeline
-│   ├── /eeglab2024.0/         # EEGLAB toolbox for EEG analysis
-│   └── /ParforProgMon/        # Parfor Progress Monitor toolbox
+├── /toolboxes/                     # Contains external toolboxes and dependencies
+│   ├── /bemobil_pipeline0.2/       # Functions from the BeMoBIL pipeline
+│   ├── /eeglab2024.0/              # EEGLAB toolbox for EEG analysis
+│   └── /ParforProgMon/             # Parfor Progress Monitor toolbox
 │
-├── requirements.txt           # Python dependencies file
+├── requirements.txt                # Python dependencies file
 ```
 
 **Important codes for the analysis**
