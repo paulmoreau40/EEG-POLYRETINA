@@ -168,7 +168,7 @@ The metadata provides additional information about each participant and must be 
 
 
 ## **5. Authors, Credits, and Acknowledgments**
-- Authors and collaborators: Paul Moreau, Antonin Duret, Sandrine Hinrichs, Denis Sheynikhovich, Angelo Arleo, Diego Ghezzi
+- Authors and collaborators: Paul Moreau, Antonin Duret, Sandrine Hinrichs, Louise Placidet, Denis Sheynikhovich, Angelo Arleo, Diego Ghezzi
 - Research Labs:
     - [Aging in Vision and Action, Sorbonne Université / Institut de la Vison / INSERM / CNRS](https://www.institut-vision.org/en/research/aging-vision-and-action#:~:text=Our%20team%20analyzes%20the%20aging,research%20and%20innovative%20technology%20transfer.)
     - [Ophthalmic and neural technologies Laboratory](https://ghezzi-lab.org/)
