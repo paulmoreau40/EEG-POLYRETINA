@@ -61,6 +61,8 @@ pip install -r requirements.txt
 ├── /data/
 │   └── /analysis/                  # Data for EEG analysis (raw, preprocessed, processed, analysis)
 │   └── /behavioural/               # Data for behavioural analysis (trial time, success rate)
+│       ├── /Post_2023_Button_tags/          # Timestamps and response accuracy (-> success rate)
+│       └── /Post_2023_Control_Center_Data/  # Timestamps of trial starts and ends (-> trial time)
 │
 ├── /polyretina/                    # Functions and codes
 │   ├── /behavioural/               # Contains Jupyter notebooks for behavioral analysis
